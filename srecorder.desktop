@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Stream Recorder
+Comment=Simple stream viewer and recorder.
+Exec=srecorder.py %f
+Icon=srecorder
+Terminal=false
+Type=Application
+Categories=AudioVideo;Video;
