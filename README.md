@@ -42,4 +42,4 @@ Ubuntu/Mint: streamrecorder*.deb
 - Ubuntu
 
 ### License:
-This project is licensed under the GNU GPL3 - see the LICENSE.md file for details
+This project is licensed under the GNU GPL3 - see the LICENSE file for details
