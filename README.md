@@ -35,6 +35,8 @@ Stream Recorder plays and record video streams.
 
 Ubuntu/Mint: streamrecorder*.deb
 
+Arch Linux AUR: https://aur.archlinux.org/packages/streamrecorder/
+
 ### Tested with:
 
 - Arch Linux
