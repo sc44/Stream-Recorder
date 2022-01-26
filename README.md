@@ -18,10 +18,6 @@ Stream Recorder plays and record video streams.
 
 ##### At first start Stream Recorder creates all directories and files.
 
-### Standard directories are:
-- /.config/srecorder/m3u
-- /.cache/srecorder/records
-
 ![alt text](https://github.com/sc44/Stream-Recorder/blob/main/screenshot.png)
 
 ### Requirements:
