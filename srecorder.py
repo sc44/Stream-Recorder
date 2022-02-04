@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 #
-#  StreamRecorder - Version: 1.41 - letzte Änderungen: 31.01.2022
+#  StreamRecorder - Version: 1.42 - letzte Änderungen: 03.02.2022
 #
 ###############################################################################################################
 
@@ -38,6 +38,8 @@ altPos = 0
 
 Wochentag = [0,0,0,0,0,0,0,0] 
 WochenText = "-------"
+Suchbereich = 0
+Suchbegriff = ""
 
 StatusAnzahl = 0
 StatusAufnahmen = 0
@@ -138,6 +140,7 @@ Woerterbuch = { \
         "Speichern":"Speichern","Abbrechen":"Abbrechen","Datei speichern":" Speichern mit <Strg+S> oder <Doppelklick-Rechts> ",
         "Aufnahme stoppen":" Aufnahme stoppen mit <Doppelklick-Links>","Deutsch":"  Deutsch  ","Englisch":"  Englisch ",
         "wirklich beenden":" Sollen wirklich alle Aufnahmen beendet werden?  ","wirklich entfernen":" wirklich entfernen?  ",
+        "SuchSpeich":"  Suche speichern","kein Suchfilter":" Zuerst einen Suchfilter setzen.  ","Sender speichern":"Ausgewählte Sender speichern unter:",
         "Kein Sender":" Kein Sender ausgewählt.  ","nicht installiert":" nicht installiert.  ","nicht gefunden":" nicht gefunden.  ",
         "Zeilenumbruch":"   Keinen Zeilenumbruch in Datei Bearbeiten","Protokoll aus":"   Keine Meldungen ins Protokoll schreiben",
         "Mo":"Mo","Di":"Di","Mi":"Mi","Do":"Do","Fr":"Fr","Sa":"Sa","So":"So","Gestartet Schedule":"Gestartet von Timer    - ",
@@ -158,6 +161,7 @@ Woerterbuch = { \
         "Speichern":"    Save    ","Abbrechen":"     Exit     ","Datei speichern":" Save file with <Ctrl+S> or <Right double click> ",
         "Aufnahme stoppen":" Stop recording with <Left double click>","Deutsch":"  German  ","Englisch":"  English  ",
         "wirklich beenden":" Are you sure you want to stop all recordings?  ","wirklich entfernen":" really remove?  ",
+        "SuchSpeich":"  Save search","kein Suchfilter":" First set a search filter.  ","Sender speichern":"Selected channels save as:",
         "Kein Sender":" No channel selected.  ","nicht installiert":" not installed.  ","nicht gefunden":" not found.  ",
         "Zeilenumbruch":"   Don't wrap lines in the file edit window ","Protokoll aus":"   Don't write any messages in the logfile",
         "Mo":"Mon","Di":"Tue","Mi":"Wed","Do":"Thu","Fr":"Fri","Sa":"Sat","So":"Sun","Gestartet Schedule":"Started by timer       - ",
@@ -169,7 +173,7 @@ Woerterbuch = { \
 ###############################################################################################################
 
 Master = tk.Tk()
-Master.title("Stream Recorder v1.41")
+Master.title("Stream Recorder v1.42")
 Master.option_add("*Dialog.msg.font", "Helvetica 11")        # Messagebox Schriftart
 Master.option_add("*Dialog.msg.wrapLength", "50i")           # Messagebox Zeilenumbruch
 
@@ -325,7 +329,13 @@ def Datei_Bearbeiten(event=None):
         Datei = fdialog.asksaveasfile(parent=Fenster, mode="w", initialdir=m3uVerzeichnis, filetypes = [("Playlists","*.m3u *.m3u8"),("Alle Dateien","*")])
         if Datei:
             Datei.write(Text_Fenster.get("1.0", tk.END + "-1c"))     # ohne letztes LF !!
-            Datei.close()
+            Puffer.clear()
+            with open(m3uDatei, "r") as Datei:
+                for Zeile in Datei:
+                    if not (Zeile == "\n" or Zeile[0:11] == "#EXTVLCOPT:"):
+                        Puffer.append(Zeile)
+                Datei.close()
+            Alle_Anzeigen()
             Fenster.destroy()
 
     if not os.path.isfile(m3uDatei):
@@ -441,10 +451,14 @@ def Listenende_Anzeigen():
 
 def Alle_Anzeigen(event=None):
 
+    global Suchbereich, Suchbegriff
+
     Listen_Loeschen()
     for i in range(1, len(Puffer)-1, 2):
         Zeilenpuffer_Auswerten(i)
     Liste_Anzeigen()
+    Suchbereich = 0
+    Suchbegriff = ""
 
 ###############################################################################################################
 
@@ -452,12 +466,15 @@ def Suche_Namen():
 
     def Namen_Anzeigen(event=None):
 
-        Eingabe = Eingabefeld.get()
+        global Suchbereich, Suchbegriff
+
+        Suchbereich = 1
+        Suchbegriff = Eingabefeld.get()
         Fenster.destroy()
         Listen_Loeschen()
         for i in range(1, len(Puffer)-1, 2):            # Puffer durchsuchen
             x = Puffer[i].find(",")
-            if Eingabe in Puffer[i][x+1:].rstrip():     # wenn gefunden
+            if Suchbegriff in Puffer[i][x+1:].rstrip():
                 Zeilenpuffer_Auswerten(i)
         Liste_Anzeigen()
 
@@ -485,13 +502,16 @@ def Suche_Land():
 
     def Land_Anzeigen(event=None):
 
-        Eingabe = Eingabefeld.get()
+        global Suchbereich, Suchbegriff
+
+        Suchbereich = 2
+        Suchbegriff = Eingabefeld.get()
         Fenster.destroy()
         Listen_Loeschen()
         for i in range(1, len(Puffer)-1, 2):            # Puffer durchsuchen
             x = Puffer[i].find("tvg-country=")
             y = Puffer[i].find('"', x+13)
-            if Puffer[i][x+13:y] == Eingabe:            # wenn gefunden
+            if Puffer[i][x+13:y] == Suchbegriff:
                 Zeilenpuffer_Auswerten(i)
         Liste_Anzeigen()
 
@@ -519,12 +539,15 @@ def Suche_Gruppe():
 
     def Gruppe_Anzeigen(event=None):
 
-        Eingabe = Eingabefeld.get()
+        global Suchbereich, Suchbegriff
+
+        Suchbereich = 3
+        Suchbegriff = Eingabefeld.get()
         Fenster.destroy()
         Listen_Loeschen()
         for i in range(1, len(Puffer)-1, 2):            # Puffer durchsuchen
             x = Puffer[i].find("group-title=")
-            if Puffer[i][x+13:x+16] == Eingabe[0:3]:    # wenn gefunden
+            if Puffer[i][x+13:x+16] == Suchbegriff[0:3]:
                 Zeilenpuffer_Auswerten(i)
         Liste_Anzeigen()
 
@@ -545,6 +568,59 @@ def Suche_Gruppe():
     Eingabefeld.focus_set()
     Eingabefeld.bind("<Return>", Gruppe_Anzeigen)
     Fenster.bind("<Escape>", lambda event: Fenster_Schliessen(Fenster))
+
+###############################################################################################################
+
+def Suche_Speichern():
+
+    def Datei_Speichern():
+
+        with open(Eingabefeld.get(), "w") as Datei:
+            Datei.write("#EXTM3U\n")
+            for i in range(1, len(Puffer)-1, 2):
+                if Suchbereich == 1:                    # nach Namen durchsuchen
+                    x = Puffer[i].find(",")
+                    if Suchbegriff in Puffer[i][x+1:].rstrip():
+                        Datei.write(Puffer[i])
+                        Datei.write(Puffer[i+1])
+                if Suchbereich == 2:                    # nach Land durchsuchen
+                    x = Puffer[i].find("tvg-country=")
+                    y = Puffer[i].find('"', x+13)
+                    if Puffer[i][x+13:y] == Suchbegriff:
+                        Datei.write(Puffer[i])
+                        Datei.write(Puffer[i+1])
+                if Suchbereich == 3:                    # nach Gruppe durchsuchen
+                    x = Puffer[i].find("group-title=")
+                    if Puffer[i][x+13:x+16] == Suchbegriff[0:3]:
+                        Datei.write(Puffer[i])
+                        Datei.write(Puffer[i+1])
+            Datei.close()
+        Fenster.destroy()
+
+
+    if Suchbereich == 0:
+        message.showwarning(TxT["Suchen"], "\n" + TxT["kein Suchfilter"])
+    else:
+        Fenster = tk.Toplevel(Master)
+        Fenster.title(TxT["Suchen"])
+        Fenster.wm_attributes("-topmost", True)
+        Fenster.grab_set()
+
+        Fenstertext = tk.Label(Fenster, text=TxT["Sender speichern"], font="Helvetica 12")
+        Eingabefeld = tk.Entry(Fenster, bd=4, width=50, font="Helvetica 11")
+        Button_Speichern = tk.Button(Fenster, bd=2, text=TxT["Speichern"], font="Helvetica 11", command=Datei_Speichern)
+        Fenstertext.pack(pady=25)
+        Eingabefeld.pack(padx= 40)
+        Button_Speichern.pack(pady=25, ipadx=25)
+
+        dName = os.path.basename(m3uDatei)              # Vorgabe für Dateinamen erstellen
+        Basis = os.path.splitext(dName)[0]
+        m3uNeu = m3uVerzeichnis + Basis + "_" + Suchbegriff + ".m3u"
+
+        Eingabefeld.insert(0, m3uNeu)
+        Eingabefeld.focus_set()
+        Eingabefeld.bind("<Return>", Datei_Speichern)
+        Fenster.bind("<Escape>", lambda event: Fenster_Schliessen(Fenster))
 
 ###############################################################################################################
 
@@ -638,7 +714,8 @@ def Player_Auswaehlen(event=None):
     Fenster = tk.Toplevel(Master)
     Fenster.title("Player")
     Fenster.wm_attributes("-topmost", True)
-    time.sleep(0.2)                                      # wegen rechter Maustaste, sonst grab failed !!
+    #time.sleep(0.2)                                      # wegen rechter Maustaste, sonst grab failed !!
+    Fenster.wait_visibility()
     Fenster.grab_set()
 
     Player_Liste = tk.Listbox(Fenster, width=25, height=20, selectborderwidth=2)
@@ -758,18 +835,35 @@ def Stream_Aufnehmen(event=None):
             Statusleiste_Anzeigen(Name[Nr])
             for n in range(1, 1000):                     # Namen der Aufnahme festlegen (..._001 bis ..._999)
                 Dateiname = Name[Nr] + "_" + str(n).zfill(3) + ".ts" 
-                if not os.path.isfile(recVerzeichnis + Dateiname):                  # wenn Dateiname nicht existiert dann übernehmen
-                    break
+                if not os.path.isfile(recVerzeichnis + Dateiname):   break   # wenn Dateiname nicht existiert dann übernehmen
+            try:
+                altpid = int(subprocess.check_output(["pidof", "-s", "ffmpeg"]))
+            except:
+                altpid = 0           # wenn kein ffmpeg aktiv
+            #print(Name[Nr])
+            #print(str(altpid) + " = alte PID")                   
             subprocess.Popen('ffmpeg -i "' + URL[Nr] + '" -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
-            time.sleep(0.5)
-            pid = int(subprocess.check_output(["pidof", "-s", "ffmpeg"]))
-            recPID.append(pid)                           # Aufnahme: PID speichern     
-            recStart.append(time.strftime("%H%M"))       # Aufnahme: Startzeit speichern                          
-            recEnde.append("9999")                       # Aufnahme: Endezeit speichern                          
-            recName.append(Name[Nr])                     # Aufnahme: Namen speichern
-            StatusAufnahmen = len(recPID)
-            Statusleiste_Anzeigen(Name[Nr])
-            protDatei_Schreiben(TxT["Gestartet Benutzer"], Name[Nr])
+            pid = 0
+            for x in range(30):
+                time.sleep(0.2)      # 0,2 Sek. x 30 Durchläufe = max. 6 Sek.
+                try:
+                    pid = int(subprocess.check_output(["pidof", "-s", "ffmpeg"]))
+                    if not pid == altpid:   break
+                except:
+                    pass
+            #print(str(pid) + " = neue PID")
+            #print(str(x) + " Durchläufe")                   
+            if pid == altpid:
+                Statusleiste_Anzeigen("PID false")
+                protDatei_Schreiben("PID false              - ", Name[Nr])
+            else:
+                recPID.append(pid)                       # Aufnahme: PID speichern     
+                recStart.append(time.strftime("%H%M"))   # Aufnahme: Startzeit speichern                          
+                recEnde.append("9999")                   # Aufnahme: Endezeit speichern                          
+                recName.append(Name[Nr])                 # Aufnahme: Namen speichern
+                StatusAufnahmen = len(recPID)
+                Statusleiste_Anzeigen(Name[Nr])
+                protDatei_Schreiben(TxT["Gestartet Benutzer"], Name[Nr])
 
 ###############################################################################################################
 
@@ -888,18 +982,31 @@ def Schedule_Starten():
             else:                                                         # wenn URL gültig
                 for n in range(1, 1000):                                  # Namen der Aufnahme festlegen (..._001 bis ..._999)
                     Dateiname = sPuffer[i][22:].rstrip() + "_" + str(n).zfill(3) + ".ts"
-                    if not os.path.isfile(recVerzeichnis + Dateiname):
-                        break
+                    if not os.path.isfile(recVerzeichnis + Dateiname):   break
+                try:
+                    altpid = int(subprocess.check_output(["pidof", "-s", "ffmpeg"]))
+                except:
+                    altpid = 0           # wenn kein ffmpeg aktiv
                 subprocess.Popen('ffmpeg -i "' + sPuffer[i+1].rstrip() + '" -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
-                time.sleep(0.5)
-                pid = int(subprocess.check_output(["pidof", "-s", "ffmpeg"]))
-                recPID.append(pid)                                        # Aufnahme: PID speichern
-                recStart.append(time.strftime("%H%M"))                    # Aufnahme: Startzeit speichern
-                recEnde.append(sPuffer[i][14:16] + sPuffer[i][17:19])     # Aufnahme: Endezeit (SSMM) speichern
-                recName.append(sPuffer[i][22:].rstrip())                  # Aufnahme: Namen (ohne LF) speichern
-                StatusAufnahmen = len(recPID)
-                Statusleiste_Anzeigen("")
-                protDatei_Schreiben(TxT["Gestartet Schedule"], sPuffer[i][22:].rstrip())
+                pid = 0
+                for x in range(30):
+                    time.sleep(0.2)      # 0,2 Sek. x 50 Durchläufe = max. 6 Sek.
+                    try:
+                        pid = int(subprocess.check_output(["pidof", "-s", "ffmpeg"]))
+                        if not pid == altpid:   break
+                    except:
+                        pass
+                if pid == altpid:
+                    Statusleiste_Anzeigen("PID false")
+                    protDatei_Schreiben("PID false              - ", Name[Nr])
+                else:
+                    recPID.append(pid)                                    # Aufnahme: PID speichern
+                    recStart.append(time.strftime("%H%M"))                # Aufnahme: Startzeit speichern
+                    recEnde.append(sPuffer[i][14:16] + sPuffer[i][17:19]) # Aufnahme: Endezeit (SSMM) speichern
+                    recName.append(sPuffer[i][22:].rstrip())              # Aufnahme: Namen (ohne LF) speichern
+                    StatusAufnahmen = len(recPID)
+                    Statusleiste_Anzeigen("")
+                    protDatei_Schreiben(TxT["Gestartet Schedule"], sPuffer[i][22:].rstrip())
 
             #---------- Wenn Einmal-Aufnehmen (*) ----------
 
@@ -1248,7 +1355,8 @@ def Einstellungen(event=None):
         Menu_Suchen.entryconfigure(0, label=TxT["Namen"], font=FontM+SizeM)
         Menu_Suchen.entryconfigure(1, label=TxT["Land"], font=FontM+SizeM)
         Menu_Suchen.entryconfigure(2, label=TxT["Gruppe"], font=FontM+SizeM)
-        Menu_Suchen.entryconfigure(4, label=TxT["Alle"], font=FontM+SizeM)
+        Menu_Suchen.entryconfigure(4, label=TxT["SuchSpeich"], font=FontM+SizeM)
+        Menu_Suchen.entryconfigure(6, label=TxT["Alle"], font=FontM+SizeM)
         Menu_Favoriten.entryconfigure(0, label=TxT["Anzeigen"], font=FontM+SizeM)
         Menu_Favoriten.entryconfigure(1, label=TxT["Hinzufügen"], font=FontM+SizeM)
         Menu_Favoriten.entryconfigure(3, label=TxT["Entfernen"], font=FontM+SizeM)
@@ -1377,7 +1485,7 @@ def Hilfe_Ueber():
     else:
         tk.Label(Fenster).pack()
     Zeile1 = tk.Label(Fenster, text="Stream Recorder", font="Helvetica 18 bold")
-    Zeile2 = tk.Label(Fenster, text="Version 1.41", font="Helvetica 12")
+    Zeile2 = tk.Label(Fenster, text="Version 1.42", font="Helvetica 12")
     Einblenden.Zeichenkette = TxT["Entwickelt"]
     Lauftext.set(Einblenden.Zeichenkette[0:43])
     Zeile3 = tk.Label(Fenster, textvariable=Lauftext, font="Helvetica 12")
@@ -1465,6 +1573,8 @@ Menu_Datei.add_command(label=TxT["Beenden"], command=Programm_Beenden, accelerat
 Menu_Suchen.add_command(label=TxT["Namen"], command=Suche_Namen)
 Menu_Suchen.add_command(label=TxT["Land"], command=Suche_Land)
 Menu_Suchen.add_command(label=TxT["Gruppe"], command=Suche_Gruppe)
+Menu_Suchen.add_separator()
+Menu_Suchen.add_command(label=TxT["SuchSpeich"], command=Suche_Speichern)
 Menu_Suchen.add_separator()
 Menu_Suchen.add_command(label=TxT["Alle"], command=Alle_Anzeigen, accelerator=" <F3> ")
 
