@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 #
-#  StreamRecorder - Version: 1.42 - letzte Änderungen: 03.02.2022
+#  StreamRecorder - Version: 1.43 - letzte Änderungen: 06.02.2022
 #
 ###############################################################################################################
 
@@ -137,15 +137,15 @@ Woerterbuch = { \
         "Schrift Menü":"Schriftgröße des Menüs eingeben: ", "Schrift Liste":"Schriftgröße der Playlist eingeben: ",
         "VGfarbe":"Vordergrundfarbe einstellen","HGfarbe":"Hintergrundfarbe einstellen","FFschema":"Fensterfarbschema auswählen",
         "pVerzeichnis":" Playlist-Verzeichnis:","rVerzeichnis":" Aufnahme-Verzeichnis:","Laufende Aufnahmen":"Laufende Aufnahmen",
-        "Speichern":"Speichern","Abbrechen":"Abbrechen","Datei speichern":" Speichern mit <Strg+S> oder <Doppelklick-Rechts> ",
+        "Speichern":"Speichern","Abbrechen":"Abbrechen","Datei speichern":" Speichern mit <Ctrl+S> oder <Doppelklick-Rechts> ",
         "Aufnahme stoppen":" Aufnahme stoppen mit <Doppelklick-Links>","Deutsch":"  Deutsch  ","Englisch":"  Englisch ",
         "wirklich beenden":" Sollen wirklich alle Aufnahmen beendet werden?  ","wirklich entfernen":" wirklich entfernen?  ",
         "SuchSpeich":"  Suche speichern","kein Suchfilter":" Zuerst einen Suchfilter setzen.  ","Sender speichern":"Ausgewählte Sender speichern unter:",
         "Kein Sender":" Kein Sender ausgewählt.  ","nicht installiert":" nicht installiert.  ","nicht gefunden":" nicht gefunden.  ",
         "Zeilenumbruch":"   Keinen Zeilenumbruch in Datei Bearbeiten","Protokoll aus":"   Keine Meldungen ins Protokoll schreiben",
         "Mo":"Mo","Di":"Di","Mi":"Mi","Do":"Do","Fr":"Fr","Sa":"Sa","So":"So","Gestartet Schedule":"Gestartet von Timer    - ",
-        "Beendet Schedule":"Beendet von Timer      - ","Alle stoppen":"Alle Aufnahmen von Benutzer beendet.","Strg":" <Strg+",
-        "Gestartet Benutzer":"Gestartet von Benutzer - ","Beendet Benutzer":"Beendet von Benutzer   - ",
+        "Beendet Schedule":"Beendet von Timer      - ","Alle stoppen":"Alle Aufnahmen von Benutzer beendet.","Ctrl":" <Ctrl+",
+        "Gestartet Benutzer":"Gestartet von Benutzer - ","Beendet Benutzer":"Beendet von Benutzer   - ","Youtube":"  youtube-dl einbinden",
         "Groesse Fenster":"Die Größe des Hauptfensters wurde geändert.  \n\nSoll die neue Größe gespeichert werden?  ",
         "Entwickelt":" ++++ Entwickelt von Woodstock & sc44 ++++ Dieses Programm wird unter den Bedingungen der GNU General Public License veröffentlicht, Copyright (C) 2021."},
 
@@ -165,15 +165,15 @@ Woerterbuch = { \
         "Kein Sender":" No channel selected.  ","nicht installiert":" not installed.  ","nicht gefunden":" not found.  ",
         "Zeilenumbruch":"   Don't wrap lines in the file edit window ","Protokoll aus":"   Don't write any messages in the logfile",
         "Mo":"Mon","Di":"Tue","Mi":"Wed","Do":"Thu","Fr":"Fri","Sa":"Sat","So":"Sun","Gestartet Schedule":"Started by timer       - ",
-        "Beendet Schedule":"Terminated by timer    - ","Alle stoppen":"All recordings terminated by user.","Strg":" <Ctrl+",
-        "Gestartet Benutzer":"Started by user        - ","Beendet Benutzer":"Terminated by user     - ",
+        "Beendet Schedule":"Terminated by timer    - ","Alle stoppen":"All recordings terminated by user.","Ctrl":" <Ctrl+",
+        "Gestartet Benutzer":"Started by user        - ","Beendet Benutzer":"Terminated by user     - ","Youtube":"  youtube-dl",
         "Groesse Fenster":"The size of main window has been changed.  \n\nDo you want to save the new size?  ",
         "Entwickelt":" +++++ Developed by Woodstock & sc44 +++++ This program is published under the terms of the GNU General Public License, Copyright (C) 2021."} }  
 
 ###############################################################################################################
 
 Master = tk.Tk()
-Master.title("Stream Recorder v1.42")
+Master.title("Stream Recorder v1.43")
 Master.option_add("*Dialog.msg.font", "Helvetica 11")        # Messagebox Schriftart
 Master.option_add("*Dialog.msg.wrapLength", "50i")           # Messagebox Zeilenumbruch
 
@@ -185,6 +185,8 @@ Statustext = tk.StringVar()                  # Statuszeile
 Lauftext = tk.StringVar()                    # Laufschrift
 Zeilenumbruch = tk.IntVar()                  # Zeilenumbruch an/aus
 ProtMeldAus = tk.IntVar()                    # Protokollmeldungen an/aus
+youtube_dl = tk.IntVar()                     # youtube-dl einbinden an/aus
+youtube_dl.set(0)
 
 recPID.clear()                               # Aufnahme: PID, Name, Startzeit, Endezeit löschen
 recName.clear()
@@ -714,8 +716,8 @@ def Player_Auswaehlen(event=None):
     Fenster = tk.Toplevel(Master)
     Fenster.title("Player")
     Fenster.wm_attributes("-topmost", True)
-    #time.sleep(0.2)                                      # wegen rechter Maustaste, sonst grab failed !!
-    Fenster.wait_visibility()
+    #Fenster.wait_visibility()
+    time.sleep(0.3)                                      # wegen rechter Maustaste, sonst grab failed !!
     Fenster.grab_set()
 
     Player_Liste = tk.Listbox(Fenster, width=25, height=20, selectborderwidth=2)
@@ -841,18 +843,22 @@ def Stream_Aufnehmen(event=None):
             except:
                 altpid = 0           # wenn kein ffmpeg aktiv
             #print(Name[Nr])
-            #print(str(altpid) + " = alte PID")                   
-            subprocess.Popen('ffmpeg -i "' + URL[Nr] + '" -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
+            #print(str(altpid) + " = alte PID")
+            if youtube_dl.get():
+                subprocess.Popen('ffmpeg -i $(youtube-dl -g "' + URL[Nr] + '") -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
+                #subprocess.Popen('ffmpeg -i $(yt-dlp -g "' + URL[Nr] + '") -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
+            else:                  
+                subprocess.Popen('ffmpeg -i "' + URL[Nr] + '" -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
             pid = 0
             for x in range(30):
-                time.sleep(0.2)      # 0,2 Sek. x 30 Durchläufe = max. 6 Sek.
+                time.sleep(0.3)      # 0,3 Sek. x 30 Durchläufe = max. 9 Sek.
                 try:
                     pid = int(subprocess.check_output(["pidof", "-s", "ffmpeg"]))
                     if not pid == altpid:   break
                 except:
                     pass
             #print(str(pid) + " = neue PID")
-            #print(str(x) + " Durchläufe")                   
+            #print(str(x+1) + " Durchläufe\n")                   
             if pid == altpid:
                 Statusleiste_Anzeigen("PID false")
                 protDatei_Schreiben("PID false              - ", Name[Nr])
@@ -987,10 +993,13 @@ def Schedule_Starten():
                     altpid = int(subprocess.check_output(["pidof", "-s", "ffmpeg"]))
                 except:
                     altpid = 0           # wenn kein ffmpeg aktiv
-                subprocess.Popen('ffmpeg -i "' + sPuffer[i+1].rstrip() + '" -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
+                if youtube_dl.get():
+                    subprocess.Popen('ffmpeg -i $(youtube-dl -g "' + sPuffer[i+1].rstrip() + '") -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
+                else:                  
+                    subprocess.Popen('ffmpeg -i "' + sPuffer[i+1].rstrip() + '" -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
                 pid = 0
                 for x in range(30):
-                    time.sleep(0.2)      # 0,2 Sek. x 50 Durchläufe = max. 6 Sek.
+                    time.sleep(0.3)      # 0,3 Sek. x 30 Durchläufe = max. 9 Sek.
                     try:
                         pid = int(subprocess.check_output(["pidof", "-s", "ffmpeg"]))
                         if not pid == altpid:   break
@@ -998,7 +1007,7 @@ def Schedule_Starten():
                         pass
                 if pid == altpid:
                     Statusleiste_Anzeigen("PID false")
-                    protDatei_Schreiben("PID false              - ", Name[Nr])
+                    protDatei_Schreiben("PID false              - ", sPuffer[i+1].rstrip())
                 else:
                     recPID.append(pid)                                    # Aufnahme: PID speichern
                     recStart.append(time.strftime("%H%M"))                # Aufnahme: Startzeit speichern
@@ -1363,7 +1372,8 @@ def Einstellungen(event=None):
         Menu_Favoriten.entryconfigure(5,label=TxT["Zurück"], font=FontM+SizeM)
         Menu_Aufnahme.entryconfigure(0, label=TxT["Stoppen"], font=FontM+SizeM)
         Menu_Aufnahme.entryconfigure(1, label=TxT["AlleStop"], font=FontM+SizeM)
-        Menu_Aufnahme.entryconfigure(3, label=TxT["Protokoll"], font=FontM+SizeM)
+        Menu_Aufnahme.entryconfigure(3, label=TxT["Youtube"], font=FontM+SizeM)
+        Menu_Aufnahme.entryconfigure(5, label=TxT["Protokoll"], font=FontM+SizeM)
         Menu_Schedule.entryconfigure(0, label=TxT["Anzeigen"], font=FontM+SizeM)
         Menu_Schedule.entryconfigure(1, label=TxT["Hinzufügen"], font=FontM+SizeM)
         Menu_Schedule.entryconfigure(3, label=TxT["Bearbeiten"], font=FontM+SizeM)
@@ -1485,7 +1495,7 @@ def Hilfe_Ueber():
     else:
         tk.Label(Fenster).pack()
     Zeile1 = tk.Label(Fenster, text="Stream Recorder", font="Helvetica 18 bold")
-    Zeile2 = tk.Label(Fenster, text="Version 1.42", font="Helvetica 12")
+    Zeile2 = tk.Label(Fenster, text="Version 1.43", font="Helvetica 12")
     Einblenden.Zeichenkette = TxT["Entwickelt"]
     Lauftext.set(Einblenden.Zeichenkette[0:43])
     Zeile3 = tk.Label(Fenster, textvariable=Lauftext, font="Helvetica 12")
@@ -1561,14 +1571,14 @@ Menu_Aufnahme = tk.Menu(Menuleiste, tearoff=0, activebackground=Hintergrund, act
 Menu_Schedule = tk.Menu(Menuleiste, tearoff=0, activebackground=Hintergrund, activeforeground=Vordergrund, font=FontM+SizeM)
 Menu_Hilfe = tk.Menu(Menuleiste, tearoff=0, activebackground=Hintergrund, activeforeground=Vordergrund, font=FontM+SizeM)
 
-Menu_Datei.add_command(label=TxT["Öffnen"], command=Datei_Oeffnen, accelerator=TxT["Strg"]+"O> ")
+Menu_Datei.add_command(label=TxT["Öffnen"], command=Datei_Oeffnen, accelerator=TxT["Ctrl"]+"O> ")
 Menu_Datei.add_command(label=TxT["Bearbeiten"], command=Datei_Bearbeiten)
 Menu_Datei.add_separator()
 Menu_Datei.add_command(label=TxT["Player"], command=Player_Auswaehlen, accelerator=" <F4> ")
 Menu_Datei.add_command(label=TxT["UserAgent"], command=User_Agent_Aendern)
 Menu_Datei.add_command(label=TxT["Einstellungen"], command=Einstellungen, accelerator=" <F7> ")
 Menu_Datei.add_separator()
-Menu_Datei.add_command(label=TxT["Beenden"], command=Programm_Beenden, accelerator=TxT["Strg"]+"Q> ")
+Menu_Datei.add_command(label=TxT["Beenden"], command=Programm_Beenden, accelerator=TxT["Ctrl"]+"Q> ")
 
 Menu_Suchen.add_command(label=TxT["Namen"], command=Suche_Namen)
 Menu_Suchen.add_command(label=TxT["Land"], command=Suche_Land)
@@ -1578,19 +1588,21 @@ Menu_Suchen.add_command(label=TxT["SuchSpeich"], command=Suche_Speichern)
 Menu_Suchen.add_separator()
 Menu_Suchen.add_command(label=TxT["Alle"], command=Alle_Anzeigen, accelerator=" <F3> ")
 
-Menu_Favoriten.add_command(label=TxT["Anzeigen"], command=Favoriten_Anzeigen, accelerator=TxT["Strg"]+"F> ")
+Menu_Favoriten.add_command(label=TxT["Anzeigen"], command=Favoriten_Anzeigen, accelerator=TxT["Ctrl"]+"F> ")
 Menu_Favoriten.add_command(label=TxT["Hinzufügen"], command=Favoriten_Hinzufuegen)
 Menu_Favoriten.add_separator()
 Menu_Favoriten.add_command(label=TxT["Entfernen"], command=Favoriten_Entfernen)
 Menu_Favoriten.add_separator()
 Menu_Favoriten.add_command(label=TxT["Zurück"], command=Favoriten_Zurueck, accelerator=" <F2> ")
 
-Menu_Aufnahme.add_command(label=TxT["Stoppen"], command=Aufnahme_Stoppen, accelerator=TxT["Strg"]+"A> ")
+Menu_Aufnahme.add_command(label=TxT["Stoppen"], command=Aufnahme_Stoppen, accelerator=TxT["Ctrl"]+"A> ")
 Menu_Aufnahme.add_command(label=TxT["AlleStop"], command=Alle_Beenden)
 Menu_Aufnahme.add_separator()
-Menu_Aufnahme.add_command(label=TxT["Protokoll"], command=Protokoll_Anzeigen, accelerator=TxT["Strg"]+"P> ")
+Menu_Aufnahme.add_checkbutton(label=TxT["Youtube"], variable=youtube_dl)
+Menu_Aufnahme.add_separator()
+Menu_Aufnahme.add_command(label=TxT["Protokoll"], command=Protokoll_Anzeigen, accelerator=TxT["Ctrl"]+"P> ")
 
-Menu_Schedule.add_command(label=TxT["Anzeigen"], command=Schedule_Anzeigen, accelerator=TxT["Strg"]+"S> ")
+Menu_Schedule.add_command(label=TxT["Anzeigen"], command=Schedule_Anzeigen, accelerator=TxT["Ctrl"]+"S> ")
 Menu_Schedule.add_command(label=TxT["Hinzufügen"], command=Schedule_Hinzufuegen, accelerator=" <F9> ")
 Menu_Schedule.add_separator()
 Menu_Schedule.add_command(label=TxT["Bearbeiten"], command=Schedule_Bearbeiten)
@@ -1653,4 +1665,3 @@ Master.protocol("WM_DELETE_WINDOW", Programm_Beenden)
 Master.mainloop()
 
 ###############################################################################################################
-
