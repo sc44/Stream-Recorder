@@ -10,13 +10,12 @@ Stream Recorder plays and record video streams.
 - Selectable streams from history.
 - Media Player freely selectable (splayer.conf).
 - User Agent freely selectable (useragent.conf).
-- Keyboard shortcuts changeable (keyboard.conf).
 - Directories can be customized.
 - Color and font size can be changed.
 - Language in English and German.
 - and much more ...
 
-##### At first start Stream Recorder creates all directories and files.
+#### At first start Stream Recorder creates all directories and files.
 
 ![alt text](https://github.com/sc44/Stream-Recorder/blob/main/screenshot.png)
 
