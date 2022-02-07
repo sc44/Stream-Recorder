@@ -1,7 +1,7 @@
 # Stream-Recorder
 
 ### Description:
-Stream Recorder plays and record video streams.
+Stream Recorder plays and records video streams.
 
 ### Features:
 - Supports standard *.m3u files.
