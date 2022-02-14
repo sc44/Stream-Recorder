@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 #
-#  StreamRecorder - Version: 1.43 - letzte Änderungen: 06.02.2022
+#  StreamRecorder - Version: 1.44 - letzte Änderungen: 14.02.2022
 #
 ###############################################################################################################
 
@@ -40,11 +40,24 @@ Wochentag = [0,0,0,0,0,0,0,0]
 WochenText = "-------"
 Suchbereich = 0
 Suchbegriff = ""
-
 StatusAnzahl = 0
 StatusAufnahmen = 0
 StatusBeendete = 0
 StatusFehler = 0
+m3uDatei = ""
+m3uMerker = ""
+startDatei = ""
+
+recVerzeichnis = os.path.expanduser("~") + "/Videos/"
+m3uVerzeichnis = os.path.expanduser("~") + "/Downloads/"
+confVerzeichnis = os.path.expanduser("~") + "/.config/srecorder/"
+cacheVerzeichnis = os.path.expanduser("~") + "/.cache/srecorder/"
+protDatei = os.path.expanduser("~") + "/.cache/srecorder/protocol.txt"
+schedDatei = os.path.expanduser("~") + "/.cache/srecorder/schedule.txt"
+confDatei = os.path.expanduser("~") + "/.config/srecorder/srecorder.conf"
+keyDatei = os.path.expanduser("~") + "/.config/srecorder/keyboard.conf"
+playerDatei = os.path.expanduser("~") + "/.config/srecorder/splayer.conf"
+uaDatei = os.path.expanduser("~") + "/.config/srecorder/useragent.conf"
 
 HauptGeo = "770x875"
 Vordergrund = "#ffffcc"
@@ -56,22 +69,6 @@ SizeM = "11"
 SizeL = "10"
 Gebiet = "de"
 
-m3uDatei = ""
-m3uMerker = ""
-startDatei = ""
-
-recVerzeichnis = os.path.expanduser("~") + "/Videos/"
-m3uVerzeichnis = os.path.expanduser("~") + "/Downloads/"
-confVerzeichnis = os.path.expanduser("~") + "/.config/srecorder/"
-cacheVerzeichnis = os.path.expanduser("~") + "/.cache/srecorder/"
-
-protDatei = os.path.expanduser("~") + "/.cache/srecorder/protocol.txt"
-schedDatei = os.path.expanduser("~") + "/.cache/srecorder/schedule.txt"
-confDatei = os.path.expanduser("~") + "/.config/srecorder/srecorder.conf"
-keyDatei = os.path.expanduser("~") + "/.config/srecorder/keyboard.conf"
-playerDatei = os.path.expanduser("~") + "/.config/srecorder/splayer.conf"
-uaDatei = os.path.expanduser("~") + "/.config/srecorder/useragent.conf"
-
 keyListe = [ \
 "View stream:          <Return>",
 "Record stream:        <space>",
@@ -81,6 +78,7 @@ keyListe = [ \
 "Select player:        <F4>",
 "Select user agent:    <F5>",
 "Settings:             <F7>",
+"Enter new stream:     <F8>",
 "Set new timer:        <F9>",
 "Terminate recording:  <Control-Key-t>",
 "View protocol:        <Control-Key-p>",
@@ -130,8 +128,8 @@ uaListe = [ \
 Woerterbuch = { \
 "de" : {"Datei":" Datei ","Suchen":" Suchen ","Favoriten":" Favoriten ","Aufnahme":" Aufnahme ","Schedule":" Schedule ",
         "Hilfe":" Hilfe ","Öffnen":"  Öffnen ","Bearbeiten":"  Bearbeiten ","Player":"  Player auswählen ","Info":"  Info ",
-        "UserAgent":"  User-Agent ändern ","Einstellungen":"  Einstellungen ","Beenden":"  Beenden ","Namen":"  Nach Namen ",
-        "Land":"  Nach Land ","Gruppe":"  Nach Gruppe ","Alle":"  Alle anzeigen ","Anzeigen":"  Anzeigen ","Über":"  Über ",
+        "UserAgent":"  User-Agent ändern ","Einstellungen":"  Einstellungen ","Beenden":"  Beenden ","nNamen":"  Nach Namen ",
+        "nLand":"  Nach Land ","nGruppe":"  Nach Gruppe ","Alle":"  Alle anzeigen ","Anzeigen":"  Anzeigen ","Über":"  Über ",
         "Hinzufügen":"  Hinzufügen ","Entfernen":"  Entfernen ","Zurück":"  Zurück ","Stoppen":"  Anzeigen / Stoppen ",
         "AlleStop":"  Alle beenden ","Protokoll":"  Protokoll anzeigen ","Tastatur":"  Tastatur ","sDatei":"Start-Playlist:",
         "Schrift Menü":"Schriftgröße des Menüs eingeben: ", "Schrift Liste":"Schriftgröße der Playlist eingeben: ",
@@ -140,19 +138,20 @@ Woerterbuch = { \
         "Speichern":"Speichern","Abbrechen":"Abbrechen","Datei speichern":" Speichern mit <Ctrl+S> oder <Doppelklick-Rechts> ",
         "Aufnahme stoppen":" Aufnahme stoppen mit <Doppelklick-Links>","Deutsch":"  Deutsch  ","Englisch":"  Englisch ",
         "wirklich beenden":" Sollen wirklich alle Aufnahmen beendet werden?  ","wirklich entfernen":" wirklich entfernen?  ",
-        "SuchSpeich":"  Suche speichern","kein Suchfilter":" Zuerst einen Suchfilter setzen.  ","Sender speichern":"Ausgewählte Sender speichern unter:",
+        "SuchSpeich":"  Suche speichern","kein Suchfilter":" Zuerst einen Suchfilter setzen.  ","Unbenannt":"Unbenannt",
+        "Sender speichern":"Ausgewählte Sender speichern unter:","Eingeben":"  Neuer Stream","Gruppe":"Gruppe:","Land":"Land:","Sprache":"Sprache:",
         "Kein Sender":" Kein Sender ausgewählt.  ","nicht installiert":" nicht installiert.  ","nicht gefunden":" nicht gefunden.  ",
         "Zeilenumbruch":"   Keinen Zeilenumbruch in Datei Bearbeiten","Protokoll aus":"   Keine Meldungen ins Protokoll schreiben",
         "Mo":"Mo","Di":"Di","Mi":"Mi","Do":"Do","Fr":"Fr","Sa":"Sa","So":"So","Gestartet Schedule":"Gestartet von Timer    - ",
         "Beendet Schedule":"Beendet von Timer      - ","Alle stoppen":"Alle Aufnahmen von Benutzer beendet.","Ctrl":" <Ctrl+",
         "Gestartet Benutzer":"Gestartet von Benutzer - ","Beendet Benutzer":"Beendet von Benutzer   - ","Youtube":"  youtube-dl einbinden",
         "Groesse Fenster":"Die Größe des Hauptfensters wurde geändert.  \n\nSoll die neue Größe gespeichert werden?  ",
-        "Entwickelt":" ++++ Entwickelt von Woodstock & sc44 ++++ Dieses Programm wird unter den Bedingungen der GNU General Public License veröffentlicht, Copyright (C) 2021."},
+        "Entwickelt":" ++++ Entwickelt von Woodstock & sc44 ++++ Dieses Programm wird unter den Bedingungen der GNU General Public License veröffentlicht, Copyright (C) 2022."},
 
 "en" : {"Datei":" File ","Suchen":" Search ","Favoriten":" Favorites ","Aufnahme":" Recording ","Schedule":" Schedule ",
         "Hilfe":" Help ","Öffnen":"  Open ","Bearbeiten":"  Edit ","Player":"  Player ","Info":"  Info ",
-        "UserAgent":"  User-Agent ","Einstellungen":"  Settings ","Beenden":"  Exit ","Namen":"  Name ",
-        "Land":"  Country ","Gruppe":"  Category ","Alle":"  List all ","Anzeigen":"  Display ","Über":"  About ",
+        "UserAgent":"  User-Agent ","Einstellungen":"  Settings ","Beenden":"  Exit ","nNamen":"  Name ",
+        "nLand":"  Country ","nGruppe":"  Category ","Alle":"  List all ","Anzeigen":"  Display ","Über":"  About ",
         "Hinzufügen":"  Add ","Entfernen":"  Delete ","Zurück":"  Back ","Stoppen":"  Disp / Stop ",
         "AlleStop":"  Stop all ","Protokoll":"  Protocol ","Tastatur":"  Keyboard ","FFschema":" Select window color scheme ",
         "Schrift Menü":"Set the font size of the menu: ", "Schrift Liste":"Set the font size of the playlist: ",
@@ -161,19 +160,20 @@ Woerterbuch = { \
         "Speichern":"    Save    ","Abbrechen":"     Exit     ","Datei speichern":" Save file with <Ctrl+S> or <Right double click> ",
         "Aufnahme stoppen":" Stop recording with <Left double click>","Deutsch":"  German  ","Englisch":"  English  ",
         "wirklich beenden":" Are you sure you want to stop all recordings?  ","wirklich entfernen":" really remove?  ",
-        "SuchSpeich":"  Save search","kein Suchfilter":" First set a search filter.  ","Sender speichern":"Selected channels save as:",
+        "SuchSpeich":"  Save search","kein Suchfilter":" First set a search filter.  ","Unbenannt":"Unnamed",
+        "Sender speichern":"Selected channels save as:","Eingeben":"  New stream","Gruppe":"Group:","Land":"Country:","Sprache":"Language:",
         "Kein Sender":" No channel selected.  ","nicht installiert":" not installed.  ","nicht gefunden":" not found.  ",
         "Zeilenumbruch":"   Don't wrap lines in the file edit window ","Protokoll aus":"   Don't write any messages in the logfile",
         "Mo":"Mon","Di":"Tue","Mi":"Wed","Do":"Thu","Fr":"Fri","Sa":"Sat","So":"Sun","Gestartet Schedule":"Started by timer       - ",
         "Beendet Schedule":"Terminated by timer    - ","Alle stoppen":"All recordings terminated by user.","Ctrl":" <Ctrl+",
         "Gestartet Benutzer":"Started by user        - ","Beendet Benutzer":"Terminated by user     - ","Youtube":"  youtube-dl",
         "Groesse Fenster":"The size of main window has been changed.  \n\nDo you want to save the new size?  ",
-        "Entwickelt":" +++++ Developed by Woodstock & sc44 +++++ This program is published under the terms of the GNU General Public License, Copyright (C) 2021."} }  
+        "Entwickelt":" +++++ Developed by Woodstock & sc44 +++++ This program is published under the terms of the GNU General Public License, Copyright (C) 2022."} }  
 
 ###############################################################################################################
 
 Master = tk.Tk()
-Master.title("Stream Recorder v1.43")
+Master.title("Stream Recorder v1.44")
 Master.option_add("*Dialog.msg.font", "Helvetica 11")        # Messagebox Schriftart
 Master.option_add("*Dialog.msg.wrapLength", "50i")           # Messagebox Zeilenumbruch
 
@@ -485,12 +485,12 @@ def Suche_Namen():
     Fenster.wm_attributes("-topmost", True)
     Fenster.grab_set()
 
-    Fenstertext = tk.Label(Fenster, text=TxT["Namen"]+":", font="Helvetica 12")
+    Fenstertext = tk.Label(Fenster, text=TxT["nNamen"]+":", font="Helvetica 12")
     Eingabefeld = tk.Entry(Fenster, bd=4, width=10, font="Helvetica 11")
-    Button_Speichern = tk.Button(Fenster, bd=2, text=TxT["Anzeigen"], font="Helvetica 11", command=Namen_Anzeigen)
+    ButtonSpeichern = tk.Button(Fenster, bd=2, text=TxT["Anzeigen"], font="Helvetica 11", command=Namen_Anzeigen)
     Fenstertext.pack(pady=20)
     Eingabefeld.pack(pady=1)
-    Button_Speichern.pack(padx=50, pady=25, ipadx=4)
+    ButtonSpeichern.pack(padx=50, pady=25, ipadx=4)
     tk.Label(Fenster).pack()
 
     Eingabefeld.insert(0, "")
@@ -522,12 +522,12 @@ def Suche_Land():
     Fenster.wm_attributes("-topmost", True)
     Fenster.grab_set()
 
-    Fenstertext = tk.Label(Fenster, text=TxT["Land"]+":", font="Helvetica 12")
+    Fenstertext = tk.Label(Fenster, text=TxT["nLand"]+":", font="Helvetica 12")
     Eingabefeld = tk.Entry(Fenster, bd=4, width=10, font="Helvetica 11")
-    Button_Speichern = tk.Button(Fenster, bd=2, text=TxT["Anzeigen"], font="Helvetica 11", command=Land_Anzeigen)
+    ButtonSpeichern = tk.Button(Fenster, bd=2, text=TxT["Anzeigen"], font="Helvetica 11", command=Land_Anzeigen)
     Fenstertext.pack(pady=20)
     Eingabefeld.pack(pady=1)
-    Button_Speichern.pack(padx=50, pady=25, ipadx=4)
+    ButtonSpeichern.pack(padx=50, pady=25, ipadx=4)
     tk.Label(Fenster).pack()
 
     Eingabefeld.insert(0, "DE")
@@ -558,12 +558,12 @@ def Suche_Gruppe():
     Fenster.wm_attributes("-topmost", True)
     Fenster.grab_set()
 
-    Fenstertext = tk.Label(Fenster, text=TxT["Gruppe"]+":", font="Helvetica 12")
+    Fenstertext = tk.Label(Fenster, text=TxT["nGruppe"]+":", font="Helvetica 12")
     Eingabefeld = tk.Entry(Fenster, bd=4, width=10, font="Helvetica 11")
-    Button_Speichern = tk.Button(Fenster, bd=2, text=TxT["Anzeigen"], font="Helvetica 11", command=Gruppe_Anzeigen)
+    ButtonSpeichern = tk.Button(Fenster, bd=2, text=TxT["Anzeigen"], font="Helvetica 11", command=Gruppe_Anzeigen)
     Fenstertext.pack(pady=20)
     Eingabefeld.pack(pady=1)
-    Button_Speichern.pack(padx=50, pady=25, ipadx=4)
+    ButtonSpeichern.pack(padx=50, pady=25, ipadx=4)
     tk.Label(Fenster).pack()
 
     Eingabefeld.insert(0, "Music")
@@ -575,7 +575,7 @@ def Suche_Gruppe():
 
 def Suche_Speichern():
 
-    def Datei_Speichern():
+    def Datei_Speichern(event=None):
 
         with open(Eingabefeld.get(), "w") as Datei:
             Datei.write("#EXTM3U\n")
@@ -610,10 +610,10 @@ def Suche_Speichern():
 
         Fenstertext = tk.Label(Fenster, text=TxT["Sender speichern"], font="Helvetica 12")
         Eingabefeld = tk.Entry(Fenster, bd=4, width=50, font="Helvetica 11")
-        Button_Speichern = tk.Button(Fenster, bd=2, text=TxT["Speichern"], font="Helvetica 11", command=Datei_Speichern)
+        ButtonSpeichern = tk.Button(Fenster, bd=2, text=TxT["Speichern"], font="Helvetica 11", command=Datei_Speichern)
         Fenstertext.pack(pady=25)
         Eingabefeld.pack(padx= 40)
-        Button_Speichern.pack(pady=25, ipadx=25)
+        ButtonSpeichern.pack(pady=25, ipadx=25)
 
         dName = os.path.basename(m3uDatei)              # Vorgabe für Dateinamen erstellen
         Basis = os.path.splitext(dName)[0]
@@ -622,6 +622,7 @@ def Suche_Speichern():
         Eingabefeld.insert(0, m3uNeu)
         Eingabefeld.focus_set()
         Eingabefeld.bind("<Return>", Datei_Speichern)
+        ButtonSpeichern.bind("<Return>", Datei_Speichern)
         Fenster.bind("<Escape>", lambda event: Fenster_Schliessen(Fenster))
 
 ###############################################################################################################
@@ -635,12 +636,14 @@ def Favoriten_Anzeigen(event=None):
     else:
         m3uMerker = m3uDatei
         m3uDatei = m3uVerzeichnis + "favoriten.m3u"
+        Puffer.clear()
         with open(m3uDatei, "r") as Datei:
-            Puffer.clear()
             for Zeile in Datei:
+                if not (Zeile == "\n" or Zeile[0:11] == "#EXTVLCOPT:"):
                     Puffer.append(Zeile)
             Datei.close()
         Alle_Anzeigen()
+
 
 ###############################################################################################################
 
@@ -661,10 +664,76 @@ def Favoriten_Hinzufuegen(event=None):
 
 ###############################################################################################################
 
+def Favoriten_Eingeben(event=None):
+
+    def Eintrag_Hinzufuegen(event=None):
+
+        FavName = m3uVerzeichnis + "favoriten.m3u"
+        if not os.path.isfile(FavName):
+            with open(FavName, "w") as Datei:
+                Datei.write("#EXTM3U\n")
+                Datei.close()
+        with open(FavName, "a") as Datei:
+            Datei.write('#EXTINF:-1 tvg-country="' + EingabeLand.get())    #  Land  
+            Datei.write('" tvg-language="' + EingabeSprache.get())         #  Sprache  
+            Datei.write('" group-title="' + EingabeGruppe.get())           #  Gruppe  
+            Datei.write('",' + EingabeName.get())                          #  Name  
+            Datei.write('\n' + EingabeLink.get() + '\n')                   #  URL
+            Datei.close()
+        Favoriten_Anzeigen()
+        Listenende_Anzeigen()
+        Fenster.destroy()
+
+
+    Fenster = tk.Toplevel(Master)
+    Fenster.title(TxT["Eingeben"])
+    Fenster.wm_attributes("-topmost", True)
+    Fenster.grab_set()
+
+    LabelName =    tk.Label(Fenster, text="Name:", font="Helvetica 11")
+    LabelGruppe =  tk.Label(Fenster, text=TxT["Gruppe"], font="Helvetica 11")
+    LabelLand =    tk.Label(Fenster, text=TxT["Land"], font="Helvetica 11")
+    LabelSprache = tk.Label(Fenster, text=TxT["Sprache"], font="Helvetica 11")
+    LabelLink =    tk.Label(Fenster, text="Link:", font="Helvetica 11")
+
+    EingabeName =    tk.Entry(Fenster, bd=2, width=53, font="Helvetica 11")
+    EingabeGruppe =  tk.Entry(Fenster, bd=2, width=11, font="Helvetica 11")
+    EingabeLand =    tk.Entry(Fenster, bd=2, width=4, font="Helvetica 11")
+    EingabeSprache = tk.Entry(Fenster, bd=2, width=12, font="Helvetica 11")
+    EingabeLink =    tk.Entry(Fenster, bd=2, width=53, font="Helvetica 11")
+    ButtonSpeichern = tk.Button(Fenster, bd=2, text=TxT["Speichern"], font="Helvetica 11", command=Eintrag_Hinzufuegen)
+    ButtonAbbrechen = tk.Button(Fenster, bd=2, text=TxT["Abbrechen"], font="Helvetica 11", command=Fenster.destroy)
+
+    tk.Label(Fenster).grid(row=0, column=0)
+    LabelName.grid(row=1, column=1, padx=20, pady=10, sticky="w")
+    EingabeName.grid(row=1, column=2, columnspan=5, padx=1, pady=10, sticky="w")
+    tk.Label(Fenster).grid(row=1, column=7, padx=15)
+    LabelGruppe.grid(row=2, column=1, padx=20, pady=10, sticky="w")
+    EingabeGruppe.grid(row=2, column=2, padx=1, pady=10)
+    LabelLand.grid(row=2, column=3, padx=20, pady=10, sticky="w")
+    EingabeLand.grid(row=2, column=4, padx=1, pady=10)
+    LabelSprache.grid(row=2, column=5, padx=20, pady=10, sticky="w")
+    EingabeSprache.grid(row=2, column=6, padx=1, pady=10)
+    LabelLink.grid(row=3, column=1, padx=20, pady=10, sticky="w")
+    EingabeLink.grid(row=3, column=2, columnspan=5, padx=1, pady=10, sticky="w")
+    ButtonSpeichern.grid(row=4, column=2, columnspan=3, pady=10, ipadx=25, sticky="w")
+    ButtonAbbrechen.grid(row=4, column=4, columnspan=3, pady=10, ipadx=20)
+    tk.Label(Fenster).grid(row=5, column=0)
+
+    EingabeName.insert(0, TxT["Unbenannt"])
+    EingabeLink.insert(0, "https://")
+    EingabeName.focus_set()
+    ButtonSpeichern.bind("<Return>", Eintrag_Hinzufuegen)
+    ButtonAbbrechen.bind("<Return>", lambda event: Fenster_Schliessen(Fenster))
+    Fenster.bind("<Escape>", lambda event: Fenster_Schliessen(Fenster))
+
+
+###############################################################################################################
+
 def Favoriten_Entfernen():
 
     global Puffer
-    
+
     if m3uDatei == m3uVerzeichnis + "favoriten.m3u":
         Nr = Listen_Box.curselection()[0]           # Index des markierten Senders
         if message.askyesno("Stream Recorder", "\n" + Name[Nr] + TxT["wirklich entfernen"]):
@@ -674,7 +743,12 @@ def Favoriten_Entfernen():
                 for i in range(0, len(Puffer)):
                     Datei.write(Puffer[i])
                 Datei.close()
-            Alle_Anzeigen()                         # gesamten Puffer neu anzeigen
+            Alle_Anzeigen()
+            Listen_Box.selection_clear(0)
+            Listen_Box.selection_set(Nr-1)          # Scrollbalken einen Eintrag zurück
+            Listen_Box.activate(Nr-1)
+            Listen_Box.focus_set()
+            Listen_Box.see(Nr-1)
 
 ###############################################################################################################
 
@@ -845,7 +919,7 @@ def Stream_Aufnehmen(event=None):
             #print(Name[Nr])
             #print(str(altpid) + " = alte PID")
             if youtube_dl.get():
-                subprocess.Popen('ffmpeg -i $(youtube-dl -g "' + URL[Nr] + '") -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
+                subprocess.Popen('ffmpeg -i $(youtube-dl -g -f best "' + URL[Nr] + '") -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
                 #subprocess.Popen('ffmpeg -i $(yt-dlp -g "' + URL[Nr] + '") -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
             else:                  
                 subprocess.Popen('ffmpeg -i "' + URL[Nr] + '" -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
@@ -994,7 +1068,7 @@ def Schedule_Starten():
                 except:
                     altpid = 0           # wenn kein ffmpeg aktiv
                 if youtube_dl.get():
-                    subprocess.Popen('ffmpeg -i $(youtube-dl -g "' + sPuffer[i+1].rstrip() + '") -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
+                    subprocess.Popen('ffmpeg -i $(youtube-dl -g -f best "' + sPuffer[i+1].rstrip() + '") -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
                 else:                  
                     subprocess.Popen('ffmpeg -i "' + sPuffer[i+1].rstrip() + '" -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
                 pid = 0
@@ -1007,7 +1081,7 @@ def Schedule_Starten():
                         pass
                 if pid == altpid:
                     Statusleiste_Anzeigen("PID false")
-                    protDatei_Schreiben("PID false              - ", sPuffer[i+1].rstrip())
+                    protDatei_Schreiben("PID false              - ", sPuffer[i][22:].rstrip())
                 else:
                     recPID.append(pid)                                    # Aufnahme: PID speichern
                     recStart.append(time.strftime("%H%M"))                # Aufnahme: Startzeit speichern
@@ -1325,7 +1399,7 @@ def Einstellungen(event=None):
             Farben_Liste.itemconfig(i, fg=VG[i], bg=HG[i])
         Farben_Liste.bind("<Double-Button-1>", Schema_Aktivieren)
 
-    def Einstellungen_Speichern():
+    def Einstellungen_Speichern(event=None):
 
         global m3uVerzeichnis, recVerzeichnis, startDatei, SizeM, SizeL,Gebiet, TxT
   
@@ -1361,15 +1435,16 @@ def Einstellungen(event=None):
         Menu_Datei.entryconfigure(4, label=TxT["UserAgent"], font=FontM+SizeM)
         Menu_Datei.entryconfigure(5, label=TxT["Einstellungen"], font=FontM+SizeM)
         Menu_Datei.entryconfigure(7, label=TxT["Beenden"], font=FontM+SizeM)
-        Menu_Suchen.entryconfigure(0, label=TxT["Namen"], font=FontM+SizeM)
-        Menu_Suchen.entryconfigure(1, label=TxT["Land"], font=FontM+SizeM)
-        Menu_Suchen.entryconfigure(2, label=TxT["Gruppe"], font=FontM+SizeM)
+        Menu_Suchen.entryconfigure(0, label=TxT["nNamen"], font=FontM+SizeM)
+        Menu_Suchen.entryconfigure(1, label=TxT["nLand"], font=FontM+SizeM)
+        Menu_Suchen.entryconfigure(2, label=TxT["nGruppe"], font=FontM+SizeM)
         Menu_Suchen.entryconfigure(4, label=TxT["SuchSpeich"], font=FontM+SizeM)
         Menu_Suchen.entryconfigure(6, label=TxT["Alle"], font=FontM+SizeM)
         Menu_Favoriten.entryconfigure(0, label=TxT["Anzeigen"], font=FontM+SizeM)
         Menu_Favoriten.entryconfigure(1, label=TxT["Hinzufügen"], font=FontM+SizeM)
-        Menu_Favoriten.entryconfigure(3, label=TxT["Entfernen"], font=FontM+SizeM)
-        Menu_Favoriten.entryconfigure(5,label=TxT["Zurück"], font=FontM+SizeM)
+        Menu_Favoriten.entryconfigure(2, label=TxT["Eingeben"], font=FontM+SizeM)
+        Menu_Favoriten.entryconfigure(4, label=TxT["Entfernen"], font=FontM+SizeM)
+        Menu_Favoriten.entryconfigure(6,label=TxT["Zurück"], font=FontM+SizeM)
         Menu_Aufnahme.entryconfigure(0, label=TxT["Stoppen"], font=FontM+SizeM)
         Menu_Aufnahme.entryconfigure(1, label=TxT["AlleStop"], font=FontM+SizeM)
         Menu_Aufnahme.entryconfigure(3, label=TxT["Youtube"], font=FontM+SizeM)
@@ -1406,8 +1481,8 @@ def Einstellungen(event=None):
     recEingabe = tk.Entry(Fenster, bd=4, width=38, font="Helvetica 11")
     startText = tk.Label(Fenster, text=TxT["sDatei"], font="Helvetica 10")
     startEingabe = tk.Entry(Fenster, bd=4, width=38, font="Helvetica 11")    
-    Button_Speichern = tk.Button(Fenster, bd=2, text=TxT["Speichern"], font="Helvetica 11", command=Einstellungen_Speichern)
-    Button_Abbrechen = tk.Button(Fenster, bd=2, text=TxT["Abbrechen"], font="Helvetica 11", command=Fenster.destroy)
+    ButtonSpeichern = tk.Button(Fenster, bd=2, text=TxT["Speichern"], font="Helvetica 11", command=Einstellungen_Speichern)
+    ButtonAbbrechen = tk.Button(Fenster, bd=2, text=TxT["Abbrechen"], font="Helvetica 11", command=Fenster.destroy)
 
     Radio_Deutsch.grid(row=1, column=0, padx=25, pady=20, ipadx=12, ipady=3, sticky="e")
     Radio_English.grid(row=1, column=1, padx=25, pady=20, ipadx=12, ipady=3, sticky="w")
@@ -1426,8 +1501,8 @@ def Einstellungen(event=None):
     recEingabe.grid(row=12, column=0, columnspan=2, pady=8)
     startText.grid(row=13, column=0, columnspan=2, pady=1)
     startEingabe.grid(row=14, column=0, columnspan=2, pady=8)
-    Button_Speichern.grid(row=15, column=0, padx=20, pady=20, ipadx=12, sticky="e")
-    Button_Abbrechen.grid(row=15, column=1, padx=20, pady=20, ipadx=12, sticky="w")
+    ButtonSpeichern.grid(row=15, column=0, padx=20, pady=20, ipadx=12, sticky="e")
+    ButtonAbbrechen.grid(row=15, column=1, padx=20, pady=20, ipadx=12, sticky="w")
     tk.Label(Fenster).grid(row=16, column=0)
 
     GebietButton.set(Gebiet)
@@ -1436,6 +1511,8 @@ def Einstellungen(event=None):
     m3uEingabe.insert(0, m3uVerzeichnis)
     recEingabe.insert(0, recVerzeichnis)
     startEingabe.insert(0, startDatei)
+    ButtonSpeichern.bind("<Return>", Einstellungen_Speichern)
+    ButtonAbbrechen.bind("<Return>", lambda event: Fenster_Schliessen(Fenster))
     Fenster.bind("<Escape>", lambda event: Fenster_Schliessen(Fenster))
 
 ###############################################################################################################
@@ -1456,7 +1533,7 @@ def Hilfe_Tastatur(event=None):
     for i in range(len(keyListe)):
         Text_Fenster.insert(tk.END, "   " + keyListe[i][0:] + "\n")
         if i == 1:  Text_Fenster.insert(tk.END, "\n")
-        if i == 8:  Text_Fenster.insert(tk.END, "\n")
+        if i == 9:  Text_Fenster.insert(tk.END, "\n")
     Text_Fenster.insert(tk.END, "\n   Scroll page:          <PgUp/PgDn>\n")
     Text_Fenster.insert(tk.END, "   Go to top:            <Home>\n")
     Text_Fenster.insert(tk.END, "   Go to end:            <End>\n")
@@ -1495,7 +1572,7 @@ def Hilfe_Ueber():
     else:
         tk.Label(Fenster).pack()
     Zeile1 = tk.Label(Fenster, text="Stream Recorder", font="Helvetica 18 bold")
-    Zeile2 = tk.Label(Fenster, text="Version 1.43", font="Helvetica 12")
+    Zeile2 = tk.Label(Fenster, text="Version 1.44", font="Helvetica 12")
     Einblenden.Zeichenkette = TxT["Entwickelt"]
     Lauftext.set(Einblenden.Zeichenkette[0:43])
     Zeile3 = tk.Label(Fenster, textvariable=Lauftext, font="Helvetica 12")
@@ -1580,9 +1657,9 @@ Menu_Datei.add_command(label=TxT["Einstellungen"], command=Einstellungen, accele
 Menu_Datei.add_separator()
 Menu_Datei.add_command(label=TxT["Beenden"], command=Programm_Beenden, accelerator=TxT["Ctrl"]+"Q> ")
 
-Menu_Suchen.add_command(label=TxT["Namen"], command=Suche_Namen)
-Menu_Suchen.add_command(label=TxT["Land"], command=Suche_Land)
-Menu_Suchen.add_command(label=TxT["Gruppe"], command=Suche_Gruppe)
+Menu_Suchen.add_command(label=TxT["nNamen"], command=Suche_Namen)
+Menu_Suchen.add_command(label=TxT["nLand"], command=Suche_Land)
+Menu_Suchen.add_command(label=TxT["nGruppe"], command=Suche_Gruppe)
 Menu_Suchen.add_separator()
 Menu_Suchen.add_command(label=TxT["SuchSpeich"], command=Suche_Speichern)
 Menu_Suchen.add_separator()
@@ -1590,6 +1667,7 @@ Menu_Suchen.add_command(label=TxT["Alle"], command=Alle_Anzeigen, accelerator=" 
 
 Menu_Favoriten.add_command(label=TxT["Anzeigen"], command=Favoriten_Anzeigen, accelerator=TxT["Ctrl"]+"F> ")
 Menu_Favoriten.add_command(label=TxT["Hinzufügen"], command=Favoriten_Hinzufuegen)
+Menu_Favoriten.add_command(label=TxT["Eingeben"], command=Favoriten_Eingeben, accelerator=" <F8> ")
 Menu_Favoriten.add_separator()
 Menu_Favoriten.add_command(label=TxT["Entfernen"], command=Favoriten_Entfernen)
 Menu_Favoriten.add_separator()
@@ -1643,16 +1721,17 @@ Listen_Box.bind(keyListe[4][22:], Alle_Anzeigen)
 Listen_Box.bind(keyListe[5][22:], Player_Auswaehlen)
 Listen_Box.bind(keyListe[6][22:], User_Agent_Aendern)
 Listen_Box.bind(keyListe[7][22:], Einstellungen)
-Listen_Box.bind(keyListe[8][22:], Schedule_Hinzufuegen)
-Listen_Box.bind(keyListe[9][22:], Aufnahme_Stoppen)
-Listen_Box.bind(keyListe[10][22:], Protokoll_Anzeigen)
-Listen_Box.bind(keyListe[11][22:], Favoriten_Anzeigen)
-Listen_Box.bind(keyListe[12][22:], Favoriten_Hinzufuegen)
-Listen_Box.bind(keyListe[13][22:], Datei_Oeffnen)
-Listen_Box.bind(keyListe[14][22:], Datei_Bearbeiten)
-Listen_Box.bind(keyListe[15][22:], Schedule_Anzeigen)
-Listen_Box.bind(keyListe[16][22:], Schedule_Bearbeiten)
-Listen_Box.bind(keyListe[17][22:], Programm_Beenden)
+Listen_Box.bind(keyListe[8][22:], Favoriten_Eingeben)
+Listen_Box.bind(keyListe[9][22:], Schedule_Hinzufuegen)
+Listen_Box.bind(keyListe[10][22:], Aufnahme_Stoppen)
+Listen_Box.bind(keyListe[11][22:], Protokoll_Anzeigen)
+Listen_Box.bind(keyListe[12][22:], Favoriten_Anzeigen)
+Listen_Box.bind(keyListe[13][22:], Favoriten_Hinzufuegen)
+Listen_Box.bind(keyListe[14][22:], Datei_Oeffnen)
+Listen_Box.bind(keyListe[15][22:], Datei_Bearbeiten)
+Listen_Box.bind(keyListe[16][22:], Schedule_Anzeigen)
+Listen_Box.bind(keyListe[17][22:], Schedule_Bearbeiten)
+Listen_Box.bind(keyListe[18][22:], Programm_Beenden)
 
 #-----------------------------------------------------
 
