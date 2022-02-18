@@ -24,13 +24,7 @@ Stream Recorder plays and records video streams.
 - python3
 - python3-tk (tkinter)
 - ffmpeg (with ffplay, optional additional media player)
-- Playlists (M3U files)
-
-### Installation:
-
-Ubuntu/Mint: streamrecorder*.deb
-
-Arch Linux AUR: https://aur.archlinux.org/packages/streamrecorder/
+- playlists (m3u files)
 
 ### Tested with:
 
