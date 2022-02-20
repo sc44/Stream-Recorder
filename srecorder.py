@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 #
-#  StreamRecorder - Version: 1.44 - letzte Änderungen: 14.02.2022
+#  StreamRecorder - Version: 1.45 - letzte Änderungen: 20.02.2022
 #
 ###############################################################################################################
 
@@ -40,24 +40,11 @@ Wochentag = [0,0,0,0,0,0,0,0]
 WochenText = "-------"
 Suchbereich = 0
 Suchbegriff = ""
+
 StatusAnzahl = 0
 StatusAufnahmen = 0
 StatusBeendete = 0
 StatusFehler = 0
-m3uDatei = ""
-m3uMerker = ""
-startDatei = ""
-
-recVerzeichnis = os.path.expanduser("~") + "/Videos/"
-m3uVerzeichnis = os.path.expanduser("~") + "/Downloads/"
-confVerzeichnis = os.path.expanduser("~") + "/.config/srecorder/"
-cacheVerzeichnis = os.path.expanduser("~") + "/.cache/srecorder/"
-protDatei = os.path.expanduser("~") + "/.cache/srecorder/protocol.txt"
-schedDatei = os.path.expanduser("~") + "/.cache/srecorder/schedule.txt"
-confDatei = os.path.expanduser("~") + "/.config/srecorder/srecorder.conf"
-keyDatei = os.path.expanduser("~") + "/.config/srecorder/keyboard.conf"
-playerDatei = os.path.expanduser("~") + "/.config/srecorder/splayer.conf"
-uaDatei = os.path.expanduser("~") + "/.config/srecorder/useragent.conf"
 
 HauptGeo = "770x875"
 Vordergrund = "#ffffcc"
@@ -69,6 +56,22 @@ SizeM = "11"
 SizeL = "10"
 Gebiet = "de"
 
+m3uDatei = ""
+m3uMerker = ""
+startDatei = ""
+
+recVerzeichnis = os.path.expanduser("~") + "/Videos/"
+m3uVerzeichnis = os.path.expanduser("~") + "/Downloads/"
+confVerzeichnis = os.path.expanduser("~") + "/.config/srecorder/"
+cacheVerzeichnis = os.path.expanduser("~") + "/.cache/srecorder/"
+
+protDatei = os.path.expanduser("~") + "/.cache/srecorder/protocol.txt"
+schedDatei = os.path.expanduser("~") + "/.cache/srecorder/schedule.txt"
+confDatei = os.path.expanduser("~") + "/.config/srecorder/srecorder.conf"
+keyDatei = os.path.expanduser("~") + "/.config/srecorder/keyboard.conf"
+playerDatei = os.path.expanduser("~") + "/.config/srecorder/splayer.conf"
+uaDatei = os.path.expanduser("~") + "/.config/srecorder/useragent.conf"
+
 keyListe = [ \
 "View stream:          <Return>",
 "Record stream:        <space>",
@@ -77,6 +80,7 @@ keyListe = [ \
 "Search filter off:    <F3>",
 "Select player:        <F4>",
 "Select user agent:    <F5>",
+"Download manager:     <F6>",
 "Settings:             <F7>",
 "Enter new stream:     <F8>",
 "Set new timer:        <F9>",
@@ -139,12 +143,13 @@ Woerterbuch = { \
         "Aufnahme stoppen":" Aufnahme stoppen mit <Doppelklick-Links>","Deutsch":"  Deutsch  ","Englisch":"  Englisch ",
         "wirklich beenden":" Sollen wirklich alle Aufnahmen beendet werden?  ","wirklich entfernen":" wirklich entfernen?  ",
         "SuchSpeich":"  Suche speichern","kein Suchfilter":" Zuerst einen Suchfilter setzen.  ","Unbenannt":"Unbenannt",
-        "Sender speichern":"Ausgewählte Sender speichern unter:","Eingeben":"  Neuer Stream","Gruppe":"Gruppe:","Land":"Land:","Sprache":"Sprache:",
+        "Sender speichern":"Ausgewählte Sender speichern unter:","Eingeben":"  Neuer Stream","Gruppe":"Gruppe:","Land":"Land:",
+        "Sprache":"Sprache:","einbinden als":" als Download-Manager einbinden","einbinden keinen":"Keinen Download-Manager einbinden",
         "Kein Sender":" Kein Sender ausgewählt.  ","nicht installiert":" nicht installiert.  ","nicht gefunden":" nicht gefunden.  ",
         "Zeilenumbruch":"   Keinen Zeilenumbruch in Datei Bearbeiten","Protokoll aus":"   Keine Meldungen ins Protokoll schreiben",
         "Mo":"Mo","Di":"Di","Mi":"Mi","Do":"Do","Fr":"Fr","Sa":"Sa","So":"So","Gestartet Schedule":"Gestartet von Timer    - ",
         "Beendet Schedule":"Beendet von Timer      - ","Alle stoppen":"Alle Aufnahmen von Benutzer beendet.","Ctrl":" <Ctrl+",
-        "Gestartet Benutzer":"Gestartet von Benutzer - ","Beendet Benutzer":"Beendet von Benutzer   - ","Youtube":"  youtube-dl einbinden",
+        "Gestartet Benutzer":"Gestartet von Benutzer - ","Beendet Benutzer":"Beendet von Benutzer   - ","Manager":"  Download-Manager",
         "Groesse Fenster":"Die Größe des Hauptfensters wurde geändert.  \n\nSoll die neue Größe gespeichert werden?  ",
         "Entwickelt":" ++++ Entwickelt von Woodstock & sc44 ++++ Dieses Programm wird unter den Bedingungen der GNU General Public License veröffentlicht, Copyright (C) 2022."},
 
@@ -161,19 +166,20 @@ Woerterbuch = { \
         "Aufnahme stoppen":" Stop recording with <Left double click>","Deutsch":"  German  ","Englisch":"  English  ",
         "wirklich beenden":" Are you sure you want to stop all recordings?  ","wirklich entfernen":" really remove?  ",
         "SuchSpeich":"  Save search","kein Suchfilter":" First set a search filter.  ","Unbenannt":"Unnamed",
-        "Sender speichern":"Selected channels save as:","Eingeben":"  New stream","Gruppe":"Group:","Land":"Country:","Sprache":"Language:",
+        "Sprache":"Sprache:","einbinden als":" include as download manager","einbinden keinen":"Do not include any download manager",
+        "Sender speichern":"Selected channels save as:","Eingeben":"  New stream","Gruppe":"Group:","Land":"Country:",
         "Kein Sender":" No channel selected.  ","nicht installiert":" not installed.  ","nicht gefunden":" not found.  ",
         "Zeilenumbruch":"   Don't wrap lines in the file edit window ","Protokoll aus":"   Don't write any messages in the logfile",
         "Mo":"Mon","Di":"Tue","Mi":"Wed","Do":"Thu","Fr":"Fri","Sa":"Sat","So":"Sun","Gestartet Schedule":"Started by timer       - ",
         "Beendet Schedule":"Terminated by timer    - ","Alle stoppen":"All recordings terminated by user.","Ctrl":" <Ctrl+",
-        "Gestartet Benutzer":"Started by user        - ","Beendet Benutzer":"Terminated by user     - ","Youtube":"  youtube-dl",
+        "Gestartet Benutzer":"Started by user        - ","Beendet Benutzer":"Terminated by user     - ","Manager":"  Download manager",
         "Groesse Fenster":"The size of main window has been changed.  \n\nDo you want to save the new size?  ",
         "Entwickelt":" +++++ Developed by Woodstock & sc44 +++++ This program is published under the terms of the GNU General Public License, Copyright (C) 2022."} }  
 
 ###############################################################################################################
 
 Master = tk.Tk()
-Master.title("Stream Recorder v1.44")
+Master.title("Stream Recorder v1.45")
 Master.option_add("*Dialog.msg.font", "Helvetica 11")        # Messagebox Schriftart
 Master.option_add("*Dialog.msg.wrapLength", "50i")           # Messagebox Zeilenumbruch
 
@@ -185,8 +191,13 @@ Statustext = tk.StringVar()                  # Statuszeile
 Lauftext = tk.StringVar()                    # Laufschrift
 Zeilenumbruch = tk.IntVar()                  # Zeilenumbruch an/aus
 ProtMeldAus = tk.IntVar()                    # Protokollmeldungen an/aus
-youtube_dl = tk.IntVar()                     # youtube-dl einbinden an/aus
+youtube_dl = tk.IntVar()                     # youtube-dl einbinden
+
+if locale.getlocale()[0][0:2] == "de":  Gebiet = "de"
+else:                                   Gebiet = "en"
 youtube_dl.set(0)
+Zeilenumbruch.set(1)    
+ProtMeldAus.set(0)
 
 recPID.clear()                               # Aufnahme: PID, Name, Startzeit, Endezeit löschen
 recName.clear()
@@ -211,6 +222,7 @@ def Schreibe_confDatei():
         Datei.write("size1=" + SizeM + "\n")
         Datei.write("size2=" + SizeL + "\n")
         Datei.write("language=" + Gebiet + "\n")
+        Datei.write("youtube=" + str(youtube_dl.get()) + "\n")
         Datei.write("nowrap=" + str(Zeilenumbruch.get()) + "\n")
         Datei.write("noprot=" + str(ProtMeldAus.get()) + "\n")
         Datei.close()
@@ -224,44 +236,31 @@ if not os.path.isdir(cacheVerzeichnis):
 
 if os.path.isfile(confDatei):                # wenn Konfigurationsdatei existiert dann laden
     with open(confDatei, "r") as Datei:
-        zAnzahl = sum(1 for Zeile in Datei)
         Puffer.clear() 
-        Datei.seek(0,0)
         for Zeile in Datei:
             Puffer.append(Zeile)
         Datei.close()
-        if zAnzahl == 13:                    # wenn neue Konfigurationsdatei mit 13 Zeilen
-            m3uVerzeichnis = Puffer[0][4:].rstrip()
-            recVerzeichnis = Puffer[1][8:].rstrip()
-            startDatei = Puffer[2][6:].rstrip()
-            HauptGeo = Puffer[3][9:].rstrip()
-            Vordergrund = Puffer[4][3:10]
-            Hintergrund = Puffer[5][3:10]
-            FensterVG = Puffer[6][4:11]
-            FensterHG = Puffer[7][4:11]
-            SizeM = Puffer[8][6:8]
-            SizeL = Puffer[9][6:8]
-            Gebiet = Puffer[10][9:11]
-            Zeilenumbruch.set(int(Puffer[11][7:8]))    
-            ProtMeldAus.set(int(Puffer[12][7:8]))    
-        else:                                # wenn alte Konfigurationsdatei dann Pfade übernehmen
+        for i in range(len(Puffer)):
+            if Puffer[i][0:4] == "m3u=":       m3uVerzeichnis = Puffer[i][4:].rstrip()
+            if Puffer[i][0:8] == "records=":   recVerzeichnis = Puffer[i][8:].rstrip()
+            if Puffer[i][0:6] == "start=":     startDatei = Puffer[i][6:].rstrip()
+            if Puffer[i][0:9] == "geometry=":  HauptGeo = Puffer[i][9:].rstrip()
+            if Puffer[i][0:3] == "fg=":        Vordergrund = Puffer[i][3:10]
+            if Puffer[i][0:3] == "bg=":        Hintergrund = Puffer[i][3:10]
+            if Puffer[i][0:4] == "fg2=":       FensterVG = Puffer[i][4:11]
+            if Puffer[i][0:4] == "bg2=":       FensterHG = Puffer[i][4:11]
+            if Puffer[i][0:6] == "size1=":     SizeM = Puffer[i][6:8]
+            if Puffer[i][0:6] == "size2=":     SizeL = Puffer[i][6:8]
+            if Puffer[i][0:9] == "language=":  Gebiet = Puffer[i][9:11]
+            if Puffer[i][0:8] == "youtube=":   youtube_dl.set(int(Puffer[i][8:9])) 
+            if Puffer[i][0:7] == "nowrap=":    Zeilenumbruch.set(int(Puffer[i][7:8]))    
+            if Puffer[i][0:7] == "noprot=":    ProtMeldAus.set(int(Puffer[i][7:8]))    
 
-            m3uVerzeichnis = os.path.expanduser("~") + Puffer[0][4:].rstrip()
-            recVerzeichnis = os.path.expanduser("~") + Puffer[1][8:].rstrip()
-            startDatei = os.path.expanduser("~") + Puffer[2][6:].rstrip()
-            Zeilenumbruch.set(1)    
-            ProtMeldAus.set(0) 
-            Schreibe_confDatei()   
-else:                                        # sonst neue Konfigurationsdatei erstellen
-    if locale.getlocale()[0][0:2] == "de":  Gebiet = "de"
-    else:                                   Gebiet = "en"
-    Zeilenumbruch.set(1)    
-    ProtMeldAus.set(0)
-    Schreibe_confDatei()   
+Schreibe_confDatei()                         # Neue Konfigurationsdatei schreiben  
 
 TxT = Woerterbuch[Gebiet]                    # Zeiger auf aktuelle Sprache
 
-Master.geometry(HauptGeo)                    # Hauptfenstergrösse
+Master.geometry(HauptGeo)                    # Hauptfenstergrösse einstellen
 
 if os.path.isfile(playerDatei):              # wenn Player-Datei existiert dann laden
     with open(playerDatei, "r") as Datei:
@@ -486,12 +485,11 @@ def Suche_Namen():
     Fenster.grab_set()
 
     Fenstertext = tk.Label(Fenster, text=TxT["nNamen"]+":", font="Helvetica 12")
-    Eingabefeld = tk.Entry(Fenster, bd=4, width=10, font="Helvetica 11")
-    ButtonSpeichern = tk.Button(Fenster, bd=2, text=TxT["Anzeigen"], font="Helvetica 11", command=Namen_Anzeigen)
+    Eingabefeld = tk.Entry(Fenster, bd=4, width=12, font="Helvetica 11")
+    ButtonSpeichern = tk.Button(Fenster, bd=3, text=TxT["Anzeigen"], font="Helvetica 11", command=Namen_Anzeigen)
     Fenstertext.pack(pady=20)
-    Eingabefeld.pack(pady=1)
-    ButtonSpeichern.pack(padx=50, pady=25, ipadx=4)
-    tk.Label(Fenster).pack()
+    Eingabefeld.pack(padx=50)
+    ButtonSpeichern.pack(pady=30, ipadx=4)
 
     Eingabefeld.insert(0, "")
     Eingabefeld.focus_set()
@@ -523,12 +521,11 @@ def Suche_Land():
     Fenster.grab_set()
 
     Fenstertext = tk.Label(Fenster, text=TxT["nLand"]+":", font="Helvetica 12")
-    Eingabefeld = tk.Entry(Fenster, bd=4, width=10, font="Helvetica 11")
-    ButtonSpeichern = tk.Button(Fenster, bd=2, text=TxT["Anzeigen"], font="Helvetica 11", command=Land_Anzeigen)
+    Eingabefeld = tk.Entry(Fenster, bd=4, width=12, font="Helvetica 11")
+    ButtonSpeichern = tk.Button(Fenster, bd=3, text=TxT["Anzeigen"], font="Helvetica 11", command=Land_Anzeigen)
     Fenstertext.pack(pady=20)
-    Eingabefeld.pack(pady=1)
-    ButtonSpeichern.pack(padx=50, pady=25, ipadx=4)
-    tk.Label(Fenster).pack()
+    Eingabefeld.pack(padx=50)
+    ButtonSpeichern.pack(pady=30, ipadx=4)
 
     Eingabefeld.insert(0, "DE")
     Eingabefeld.focus_set()
@@ -559,12 +556,11 @@ def Suche_Gruppe():
     Fenster.grab_set()
 
     Fenstertext = tk.Label(Fenster, text=TxT["nGruppe"]+":", font="Helvetica 12")
-    Eingabefeld = tk.Entry(Fenster, bd=4, width=10, font="Helvetica 11")
-    ButtonSpeichern = tk.Button(Fenster, bd=2, text=TxT["Anzeigen"], font="Helvetica 11", command=Gruppe_Anzeigen)
+    Eingabefeld = tk.Entry(Fenster, bd=4, width=12, font="Helvetica 11")
+    ButtonSpeichern = tk.Button(Fenster, bd=3, text=TxT["Anzeigen"], font="Helvetica 11", command=Gruppe_Anzeigen)
     Fenstertext.pack(pady=20)
-    Eingabefeld.pack(pady=1)
-    ButtonSpeichern.pack(padx=50, pady=25, ipadx=4)
-    tk.Label(Fenster).pack()
+    Eingabefeld.pack(padx=50)
+    ButtonSpeichern.pack(pady=30, ipadx=4)
 
     Eingabefeld.insert(0, "Music")
     Eingabefeld.focus_set()
@@ -609,11 +605,13 @@ def Suche_Speichern():
         Fenster.grab_set()
 
         Fenstertext = tk.Label(Fenster, text=TxT["Sender speichern"], font="Helvetica 12")
-        Eingabefeld = tk.Entry(Fenster, bd=4, width=50, font="Helvetica 11")
-        ButtonSpeichern = tk.Button(Fenster, bd=2, text=TxT["Speichern"], font="Helvetica 11", command=Datei_Speichern)
+        Eingabefeld = tk.Entry(Fenster, bd=4, width=52, font="Helvetica 11")
+        ButtonSpeichern = tk.Button(Fenster, bd=3, text=TxT["Speichern"], font="Helvetica 11", command=Datei_Speichern)
+        ButtonAbbrechen = tk.Button(Fenster, bd=3, text=TxT["Abbrechen"], font="Helvetica 11", command=Fenster.destroy)
         Fenstertext.pack(pady=25)
         Eingabefeld.pack(padx= 40)
-        ButtonSpeichern.pack(pady=25, ipadx=25)
+        ButtonSpeichern.pack(pady=25, ipadx=23, expand=True, side="left", padx=40)
+        ButtonAbbrechen.pack(pady=25, ipadx=20, expand=True, side="left", anchor="w")
 
         dName = os.path.basename(m3uDatei)              # Vorgabe für Dateinamen erstellen
         Basis = os.path.splitext(dName)[0]
@@ -623,6 +621,7 @@ def Suche_Speichern():
         Eingabefeld.focus_set()
         Eingabefeld.bind("<Return>", Datei_Speichern)
         ButtonSpeichern.bind("<Return>", Datei_Speichern)
+        ButtonAbbrechen.bind("<Return>", lambda event: Fenster_Schliessen(Fenster))
         Fenster.bind("<Escape>", lambda event: Fenster_Schliessen(Fenster))
 
 ###############################################################################################################
@@ -643,7 +642,6 @@ def Favoriten_Anzeigen(event=None):
                     Puffer.append(Zeile)
             Datei.close()
         Alle_Anzeigen()
-
 
 ###############################################################################################################
 
@@ -669,9 +667,9 @@ def Favoriten_Eingeben(event=None):
     def Eintrag_Hinzufuegen(event=None):
 
         FavName = m3uVerzeichnis + "favoriten.m3u"
-        if not os.path.isfile(FavName):
+        if not os.path.isfile(FavName):             # wenn keine Favoriten-Datei gefunden
             with open(FavName, "w") as Datei:
-                Datei.write("#EXTM3U\n")
+                Datei.write("#EXTM3U\n")            # 1.Zeile schreiben (Header)
                 Datei.close()
         with open(FavName, "a") as Datei:
             Datei.write('#EXTINF:-1 tvg-country="' + EingabeLand.get())    #  Land  
@@ -690,39 +688,39 @@ def Favoriten_Eingeben(event=None):
     Fenster.wm_attributes("-topmost", True)
     Fenster.grab_set()
 
-    LabelName =    tk.Label(Fenster, text="Name:", font="Helvetica 11")
-    LabelGruppe =  tk.Label(Fenster, text=TxT["Gruppe"], font="Helvetica 11")
-    LabelLand =    tk.Label(Fenster, text=TxT["Land"], font="Helvetica 11")
-    LabelSprache = tk.Label(Fenster, text=TxT["Sprache"], font="Helvetica 11")
-    LabelLink =    tk.Label(Fenster, text="Link:", font="Helvetica 11")
-
-    EingabeName =    tk.Entry(Fenster, bd=2, width=53, font="Helvetica 11")
-    EingabeGruppe =  tk.Entry(Fenster, bd=2, width=11, font="Helvetica 11")
-    EingabeLand =    tk.Entry(Fenster, bd=2, width=4, font="Helvetica 11")
-    EingabeSprache = tk.Entry(Fenster, bd=2, width=12, font="Helvetica 11")
-    EingabeLink =    tk.Entry(Fenster, bd=2, width=53, font="Helvetica 11")
-    ButtonSpeichern = tk.Button(Fenster, bd=2, text=TxT["Speichern"], font="Helvetica 11", command=Eintrag_Hinzufuegen)
-    ButtonAbbrechen = tk.Button(Fenster, bd=2, text=TxT["Abbrechen"], font="Helvetica 11", command=Fenster.destroy)
+    TextName =    tk.Label(Fenster, text="Name:", font="Helvetica 11")
+    TextGruppe =  tk.Label(Fenster, text=TxT["Gruppe"], font="Helvetica 11")
+    TextLand =    tk.Label(Fenster, text=TxT["Land"], font="Helvetica 11")
+    TextSprache = tk.Label(Fenster, text=TxT["Sprache"], font="Helvetica 11")
+    TextLink =    tk.Label(Fenster, text="Link:", font="Helvetica 11")
+    EingabeName =    tk.Entry(Fenster, bd=3, width=53, font="Helvetica 11")
+    EingabeGruppe =  tk.Entry(Fenster, bd=3, width=11, font="Helvetica 11")
+    EingabeLand =    tk.Entry(Fenster, bd=3, width=4, font="Helvetica 11")
+    EingabeSprache = tk.Entry(Fenster, bd=3, width=12, font="Helvetica 11")
+    EingabeLink =    tk.Entry(Fenster, bd=3, width=53, font="Helvetica 11")
+    ButtonSpeichern = tk.Button(Fenster, bd=3, text=TxT["Speichern"], font="Helvetica 11", command=Eintrag_Hinzufuegen)
+    ButtonAbbrechen = tk.Button(Fenster, bd=3, text=TxT["Abbrechen"], font="Helvetica 11", command=Fenster.destroy)
 
     tk.Label(Fenster).grid(row=0, column=0)
-    LabelName.grid(row=1, column=1, padx=20, pady=10, sticky="w")
+    TextName.grid(row=1, column=1, padx=20, pady=10, sticky="w")
     EingabeName.grid(row=1, column=2, columnspan=5, padx=1, pady=10, sticky="w")
     tk.Label(Fenster).grid(row=1, column=7, padx=15)
-    LabelGruppe.grid(row=2, column=1, padx=20, pady=10, sticky="w")
+    TextGruppe.grid(row=2, column=1, padx=20, pady=10, sticky="w")
     EingabeGruppe.grid(row=2, column=2, padx=1, pady=10)
-    LabelLand.grid(row=2, column=3, padx=20, pady=10, sticky="w")
+    TextLand.grid(row=2, column=3, padx=20, pady=10, sticky="w")
     EingabeLand.grid(row=2, column=4, padx=1, pady=10)
-    LabelSprache.grid(row=2, column=5, padx=20, pady=10, sticky="w")
+    TextSprache.grid(row=2, column=5, padx=20, pady=10, sticky="w")
     EingabeSprache.grid(row=2, column=6, padx=1, pady=10)
-    LabelLink.grid(row=3, column=1, padx=20, pady=10, sticky="w")
+    TextLink.grid(row=3, column=1, padx=20, pady=10, sticky="w")
     EingabeLink.grid(row=3, column=2, columnspan=5, padx=1, pady=10, sticky="w")
-    ButtonSpeichern.grid(row=4, column=2, columnspan=3, pady=10, ipadx=25, sticky="w")
+    ButtonSpeichern.grid(row=4, column=2, columnspan=3, pady=10, ipadx=23, sticky="w")
     ButtonAbbrechen.grid(row=4, column=4, columnspan=3, pady=10, ipadx=20)
     tk.Label(Fenster).grid(row=5, column=0)
 
     EingabeName.insert(0, TxT["Unbenannt"])
-    EingabeLink.insert(0, "https://")
+    EingabeName.select_range(0, tk.END)
     EingabeName.focus_set()
+    EingabeLink.insert(0, "https://")
     ButtonSpeichern.bind("<Return>", Eintrag_Hinzufuegen)
     ButtonAbbrechen.bind("<Return>", lambda event: Fenster_Schliessen(Fenster))
     Fenster.bind("<Escape>", lambda event: Fenster_Schliessen(Fenster))
@@ -843,6 +841,44 @@ def User_Agent_Aendern(event=None):
 
 ###############################################################################################################
 
+def Download_Manager(event=None):
+
+    def Manager_Speichern(event=None):
+
+        Schreibe_confDatei()
+        Fenster.destroy()
+
+    Fenster = tk.Toplevel(Master)
+    Fenster.title("Stream Recorder")
+    Fenster.wm_attributes("-topmost", True)
+    Fenster.grab_set()
+
+    RadioZeile1 = tk.Radiobutton(Fenster, relief="raised", overrelief="sunken", bd=2, variable=youtube_dl, value=2)
+    RadioZeile2 = tk.Radiobutton(Fenster, relief="raised", overrelief="sunken", bd=2, variable=youtube_dl, value=1)
+    RadioZeile3 = tk.Radiobutton(Fenster, relief="raised", overrelief="sunken", bd=2, variable=youtube_dl, value=0)
+    RadioZeile = [RadioZeile1, RadioZeile2, RadioZeile3]
+    TextZeile1 = tk.Label(Fenster, text="yt-dlp" + TxT["einbinden als"], font="Helvetica 11")
+    TextZeile2 = tk.Label(Fenster, text="youtube-dl" + TxT["einbinden als"], font="Helvetica 11")
+    TextZeile3 = tk.Label(Fenster, text=TxT["einbinden keinen"], font="Helvetica 11")
+    TextZeile = [TextZeile1, TextZeile2, TextZeile3]
+
+    tk.Label(Fenster).grid(row=0,column=0, pady=2, columnspan=4)
+    for i in range(3):
+        tk.Label(Fenster).grid(row=i+1,column=0, padx=5, pady=6)
+        RadioZeile[i].grid(row=i+1, column=1, padx=25, pady=6)
+        TextZeile[i].grid(row=i+1, column=2, padx=0, pady=6,sticky="w")
+        tk.Label(Fenster).grid(row=i+1,column=3, padx=15, pady=6)
+
+    ButtonSpeichern = tk.Button(Fenster, bd=3, text=TxT["Speichern"], font="Helvetica 11", command=Manager_Speichern)
+    ButtonAbbrechen = tk.Button(Fenster, bd=3, text=TxT["Abbrechen"], font="Helvetica 11", command=Fenster.destroy)
+    ButtonSpeichern.grid(row=8, column=0, padx=48, pady=20, ipadx=20, columnspan=4,sticky="w")
+    ButtonAbbrechen.grid(row=8, column=0, padx=48, pady=20, ipadx=17, columnspan=4,sticky="e")
+    ButtonSpeichern.bind("<Return>", Manager_Speichern)
+    ButtonAbbrechen.bind("<Return>", lambda event: Fenster_Schliessen(Fenster))
+    Fenster.bind("<Escape>", lambda event: Fenster_Schliessen(Fenster))
+
+###############################################################################################################
+
 def Stream_Anschauen(event=None):
 
     x = cmdPlayer.find(" ")
@@ -912,32 +948,14 @@ def Stream_Aufnehmen(event=None):
             for n in range(1, 1000):                     # Namen der Aufnahme festlegen (..._001 bis ..._999)
                 Dateiname = Name[Nr] + "_" + str(n).zfill(3) + ".ts" 
                 if not os.path.isfile(recVerzeichnis + Dateiname):   break   # wenn Dateiname nicht existiert dann übernehmen
-            try:
-                altpid = int(subprocess.check_output(["pidof", "-s", "ffmpeg"]))
-            except:
-                altpid = 0           # wenn kein ffmpeg aktiv
-            #print(Name[Nr])
-            #print(str(altpid) + " = alte PID")
-            if youtube_dl.get():
-                subprocess.Popen('ffmpeg -i $(youtube-dl -g -f best "' + URL[Nr] + '") -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
-                #subprocess.Popen('ffmpeg -i $(yt-dlp -g "' + URL[Nr] + '") -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
+            if youtube_dl.get() == 2:
+                proc = subprocess.Popen('ffmpeg -i $(yt-dlp -g -f b "' + URL[Nr] + '") -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True, preexec_fn=os.setsid)
+            elif youtube_dl.get() == 1:
+                proc = subprocess.Popen('ffmpeg -i $(youtube-dl -g -f best "' + URL[Nr] + '") -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True, preexec_fn=os.setsid)
             else:                  
-                subprocess.Popen('ffmpeg -i "' + URL[Nr] + '" -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
-            pid = 0
-            for x in range(30):
-                time.sleep(0.3)      # 0,3 Sek. x 30 Durchläufe = max. 9 Sek.
-                try:
-                    pid = int(subprocess.check_output(["pidof", "-s", "ffmpeg"]))
-                    if not pid == altpid:   break
-                except:
-                    pass
-            #print(str(pid) + " = neue PID")
-            #print(str(x+1) + " Durchläufe\n")                   
-            if pid == altpid:
-                Statusleiste_Anzeigen("PID false")
-                protDatei_Schreiben("PID false              - ", Name[Nr])
-            else:
-                recPID.append(pid)                       # Aufnahme: PID speichern     
+                proc = subprocess.Popen('ffmpeg -i "' + URL[Nr] + '" -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True, preexec_fn=os.setsid)
+            if proc.pid:
+                recPID.append(proc.pid)                  # Aufnahme: PID speichern     
                 recStart.append(time.strftime("%H%M"))   # Aufnahme: Startzeit speichern                          
                 recEnde.append("9999")                   # Aufnahme: Endezeit speichern                          
                 recName.append(Name[Nr])                 # Aufnahme: Namen speichern
@@ -955,7 +973,7 @@ def Aufnahme_Stoppen(event=None):
 
         Nr = int(Record_Liste.curselection()[0])         # Index Aufnahmeliste
         try:
-            os.kill(int(recPID[Nr]), signal.SIGTERM)     # Aufnahme stoppen
+            os.killpg(int(recPID[Nr]), signal.SIGTERM)   # Aufnahme stoppen
         except:
             pass
         if not ProtMeldAus.get():  
@@ -1000,11 +1018,15 @@ def Alle_Beenden():
     global recPID, recStart, recEnde, recName, StatusAufnahmen, StatusBeendete
 
     if message.askyesno("Stream Recorder", "\n" + TxT["wirklich beenden"]):
-        subprocess.Popen('killall ffmpeg', shell=True)
-        if not ProtMeldAus.get():  
-            with open(protDatei, "a") as Datei:
-                Datei.write(time.strftime("%d.%m.%y %H:%M > ") + TxT["Alle stoppen"] + "\n")
-                Datei.close()
+        for i in range(len(recPID)):
+            try:
+                os.killpg(int(recPID[i]), signal.SIGTERM)
+            except:
+                pass
+            if not ProtMeldAus.get():  
+                with open(protDatei, "a") as Datei:
+                    Datei.write(time.strftime("%d.%m.%y %H:%M > ") + TxT["Beendet Benutzer"] + recName[i] + "\n")
+                    Datei.close()
         StatusAufnahmen = 0
         StatusBeendete += len(recPID)
         Statusleiste_Anzeigen("")
@@ -1039,7 +1061,7 @@ def Schedule_Starten():
     Aktuelle = int(time.strftime("%H%M"))                                 # aktuelle Uhrzeit holen (SSMM)
     w = datetime.datetime.today().weekday()                               # aktuellen Wochentag holen (0-6)
 
-    for i in range(len(sPuffer)-2, -2, -2):                               # vom Ende her durchsuchen (Löschfehler verhindern)
+    for i in range(len(sPuffer)-2, -2, -2):                               # vom Ende her durchsuchen (Löschfehler vermeiden)
         Startzeit = int(sPuffer[i][8:10] + sPuffer[i][11:13])             # Startzeit holen (SSMM)
 
         if Startzeit == Aktuelle and sPuffer[i][w] == "x":                # wenn Uhrzeit und Wochentag stimmen
@@ -1063,27 +1085,14 @@ def Schedule_Starten():
                 for n in range(1, 1000):                                  # Namen der Aufnahme festlegen (..._001 bis ..._999)
                     Dateiname = sPuffer[i][22:].rstrip() + "_" + str(n).zfill(3) + ".ts"
                     if not os.path.isfile(recVerzeichnis + Dateiname):   break
-                try:
-                    altpid = int(subprocess.check_output(["pidof", "-s", "ffmpeg"]))
-                except:
-                    altpid = 0           # wenn kein ffmpeg aktiv
-                if youtube_dl.get():
-                    subprocess.Popen('ffmpeg -i $(youtube-dl -g -f best "' + sPuffer[i+1].rstrip() + '") -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
+                if youtube_dl.get() == 2:
+                    proc = subprocess.Popen('ffmpeg -i $(yt-dlp -g "' + sPuffer[i+1].rstrip() + '") -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True, preexec_fn=os.setsid)
+                elif youtube_dl.get() == 1:
+                    proc = subprocess.Popen('ffmpeg -i $(youtube-dl -g "' + sPuffer[i+1].rstrip() + '") -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True, preexec_fn=os.setsid)
                 else:                  
-                    subprocess.Popen('ffmpeg -i "' + sPuffer[i+1].rstrip() + '" -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True)
-                pid = 0
-                for x in range(30):
-                    time.sleep(0.3)      # 0,3 Sek. x 30 Durchläufe = max. 9 Sek.
-                    try:
-                        pid = int(subprocess.check_output(["pidof", "-s", "ffmpeg"]))
-                        if not pid == altpid:   break
-                    except:
-                        pass
-                if pid == altpid:
-                    Statusleiste_Anzeigen("PID false")
-                    protDatei_Schreiben("PID false              - ", sPuffer[i][22:].rstrip())
-                else:
-                    recPID.append(pid)                                    # Aufnahme: PID speichern
+                    proc = subprocess.Popen('ffmpeg -i "' + sPuffer[i+1].rstrip() + '" -c:v copy -c:a copy "' + recVerzeichnis + Dateiname + '" 2> /dev/null', shell=True, preexec_fn=os.setsid)
+                if proc.pid:
+                    recPID.append(proc.pid)                               # Aufnahme: PID speichern
                     recStart.append(time.strftime("%H%M"))                # Aufnahme: Startzeit speichern
                     recEnde.append(sPuffer[i][14:16] + sPuffer[i][17:19]) # Aufnahme: Endezeit (SSMM) speichern
                     recName.append(sPuffer[i][22:].rstrip())              # Aufnahme: Namen (ohne LF) speichern
@@ -1109,11 +1118,11 @@ def Schedule_Starten():
 
     #---------- Nächste Aufnahme(n) beenden ----------
 
-    for i in range(len(recEnde)-1, -1, -1):            # vom Ende her durchsuchen (Löschfehler verhindern)
+    for i in range(len(recEnde)-1, -1, -1):            # vom Ende her durchsuchen (Löschfehler vermeiden)
         Endezeit = int(recEnde[i])
         if Endezeit == Aktuelle:
             try:
-                os.kill(int(recPID[i]), signal.SIGTERM)
+                os.killpg(int(recPID[i]), signal.SIGTERM)
             except:
                 pass
             protDatei_Schreiben(TxT["Beendet Schedule"], recName[i])
@@ -1210,7 +1219,7 @@ def Schedule_Hinzufuegen(event=None):
 
         Nr = Listen_Box.curselection()[0]
         with open(schedDatei, "a") as Datei:
-            Datei.write(WochenText + " " + str(Start) + " " + str(Ende) + " " + Einmal + " " + Name[Nr] + "\n")
+            Datei.write(WochenText + " " + Start + " " + Ende + " " + Einmal + " " + Name[Nr] + "\n")
             Datei.write(str(URL[Nr] + "\n"))
             Datei.close()
         Fenster.destroy()
@@ -1234,7 +1243,7 @@ def Schedule_Hinzufuegen(event=None):
         Wochentag[i] = tk.IntVar()                     # Checkboxen Mo-So auf Null setzen
         Wochentag[i].set(0)
 
-    Wiederholung = tk.IntVar()                         # Einmal-Aufnehmen setzen
+    Wiederholung = tk.IntVar()                         # Einmal-Aufnehmen setzen (default)
     Wiederholung.set(0)
 
     i = datetime.datetime.today().weekday()            # aktuellen Wochentag setzen
@@ -1285,8 +1294,8 @@ def Schedule_Hinzufuegen(event=None):
     tk.Label(Fenster).grid(row=2, column=11, padx=10)
     Radio1.grid(row=2, column=12, padx=2, pady=4)
     tk.Label(Fenster).grid(row=2, column=13, padx=10)
-    ButtonSpeichern.grid(row=3, column=4, padx=10, pady=20, ipadx=8, columnspan=5)
-    ButtonAbbrechen.grid(row=3, column=9, padx=0, pady=20, ipadx=8, columnspan=3)
+    ButtonSpeichern.grid(row=3, column=3, padx=0, pady=20, ipadx=23, columnspan=6)
+    ButtonAbbrechen.grid(row=3, column=9, padx=0, pady=20, ipadx=20, columnspan=4)
     tk.Label(Fenster).grid(row=4, column=1, padx=10)
 
     BoxStart.insert(0, time.strftime("%H:%M"))
@@ -1401,22 +1410,22 @@ def Einstellungen(event=None):
 
     def Einstellungen_Speichern(event=None):
 
-        global m3uVerzeichnis, recVerzeichnis, startDatei, SizeM, SizeL,Gebiet, TxT
+        global m3uVerzeichnis, recVerzeichnis, startDatei, SizeM, SizeL, Gebiet, TxT
   
-        if m3uEingabe.get()[-1] == "/":  m3uVerzeichnis = m3uEingabe.get()
-        else:                            m3uVerzeichnis = m3uEingabe.get() + "/" 
+        if EingabeM3uVerz.get()[-1] == "/":  m3uVerzeichnis = EingabeM3uVerz.get()
+        else:                                m3uVerzeichnis = EingabeM3uVerz.get() + "/" 
         if not os.path.isdir(m3uVerzeichnis):
             os.makedirs(m3uVerzeichnis)
-        if recEingabe.get()[-1] == "/":  recVerzeichnis = recEingabe.get()
-        else:                            recVerzeichnis = recEingabe.get() + "/" 
+        if EingabeRecVerz.get()[-1] == "/":  recVerzeichnis = EingabeRecVerz.get()
+        else:                                recVerzeichnis = EingabeRecVerz.get() + "/" 
         if not os.path.isdir(recVerzeichnis):
             os.makedirs(recVerzeichnis)
-        startDatei = startEingabe.get()
+        startDatei = EingabeStartDat.get()
 
-        if SizeMEingabe.get().isdecimal():
-            SizeM = SizeMEingabe.get()[0:2]
-        if SizeLEingabe.get().isdecimal():
-            SizeL = SizeLEingabe.get()[0:2]
+        if EingabeSizeM.get().isdecimal():
+            SizeM = EingabeSizeM.get()[0:2]
+        if EingabeSizeL.get().isdecimal():
+            SizeL = EingabeSizeL.get()[0:2]
         Gebiet = GebietButton.get()
         TxT = Woerterbuch[Gebiet]
         Listen_Box.config(font="Monospace "+SizeL)
@@ -1447,7 +1456,7 @@ def Einstellungen(event=None):
         Menu_Favoriten.entryconfigure(6,label=TxT["Zurück"], font=FontM+SizeM)
         Menu_Aufnahme.entryconfigure(0, label=TxT["Stoppen"], font=FontM+SizeM)
         Menu_Aufnahme.entryconfigure(1, label=TxT["AlleStop"], font=FontM+SizeM)
-        Menu_Aufnahme.entryconfigure(3, label=TxT["Youtube"], font=FontM+SizeM)
+        Menu_Aufnahme.entryconfigure(3, label=TxT["Manager"], font=FontM+SizeM)
         Menu_Aufnahme.entryconfigure(5, label=TxT["Protokoll"], font=FontM+SizeM)
         Menu_Schedule.entryconfigure(0, label=TxT["Anzeigen"], font=FontM+SizeM)
         Menu_Schedule.entryconfigure(1, label=TxT["Hinzufügen"], font=FontM+SizeM)
@@ -1464,53 +1473,53 @@ def Einstellungen(event=None):
     Fenster.wm_attributes("-topmost", True)
     Fenster.grab_set()
 
-    Radio_Deutsch = tk.Radiobutton(Fenster, relief="raised", overrelief="sunken", bd=2, variable=GebietButton, value="de", text=TxT["Deutsch"], font="Helvetica 11")
-    Radio_English = tk.Radiobutton(Fenster, relief="raised", overrelief="sunken", bd=2, variable=GebietButton, value="en", text=TxT["Englisch"], font="Helvetica 11")
-    Check_StartBild = tk.Checkbutton(Fenster, bd=2, text=TxT["Zeilenumbruch"], font="Helvetica 11", variable=Zeilenumbruch)
-    Check_Protokoll = tk.Checkbutton(Fenster, bd=2, text=TxT["Protokoll aus"], font="Helvetica 11", variable=ProtMeldAus)
-    SizeMText = tk.Label(Fenster, text=TxT["Schrift Menü"], font="Helvetica 11")
-    SizeLText = tk.Label(Fenster, text=TxT["Schrift Liste"], font="Helvetica 11")
-    SizeMEingabe = tk.Entry(Fenster, bd=4, width=4, font="Helvetica 11")
-    SizeLEingabe = tk.Entry(Fenster, bd=4, width=4, font="Helvetica 11")
-    Button_Vorderg = tk.Button(Fenster, bd=2, text=TxT["VGfarbe"], font="Helvetica 11", command=Vordergrund_Einstellen)
-    Button_Hinterg = tk.Button(Fenster, bd=2, text=TxT["HGfarbe"], font="Helvetica 11", command=Hintergrund_Einstellen)
-    Button_Standard = tk.Button(Fenster, bd=2, text=TxT["FFschema"], font="Helvetica 11", command=Fensterfarbschema)
-    m3uText = tk.Label(Fenster, text=TxT["pVerzeichnis"], font="Helvetica 10")
-    m3uEingabe = tk.Entry(Fenster, bd=4, width=38, font="Helvetica 11")
-    recText = tk.Label(Fenster, text=TxT["rVerzeichnis"], font="Helvetica 10")
-    recEingabe = tk.Entry(Fenster, bd=4, width=38, font="Helvetica 11")
-    startText = tk.Label(Fenster, text=TxT["sDatei"], font="Helvetica 10")
-    startEingabe = tk.Entry(Fenster, bd=4, width=38, font="Helvetica 11")    
-    ButtonSpeichern = tk.Button(Fenster, bd=2, text=TxT["Speichern"], font="Helvetica 11", command=Einstellungen_Speichern)
-    ButtonAbbrechen = tk.Button(Fenster, bd=2, text=TxT["Abbrechen"], font="Helvetica 11", command=Fenster.destroy)
+    RadioDeutsch = tk.Radiobutton(Fenster, relief="raised", bd=3, variable=GebietButton, value="de", text=TxT["Deutsch"], font="Helvetica 11")
+    RadioEnglish = tk.Radiobutton(Fenster, relief="raised", bd=3, variable=GebietButton, value="en", text=TxT["Englisch"], font="Helvetica 11")
+    CheckZUmbruch = tk.Checkbutton(Fenster, bd=3, text=TxT["Zeilenumbruch"], font="Helvetica 11", variable=Zeilenumbruch)
+    CheckProtokoll = tk.Checkbutton(Fenster, bd=3, text=TxT["Protokoll aus"], font="Helvetica 11", variable=ProtMeldAus)
+    TextSizeM = tk.Label(Fenster, text=TxT["Schrift Menü"], font="Helvetica 11")
+    EingabeSizeM = tk.Entry(Fenster, bd=4, width=4, font="Helvetica 11")
+    TextSizeL = tk.Label(Fenster, text=TxT["Schrift Liste"], font="Helvetica 11")
+    EingabeSizeL = tk.Entry(Fenster, bd=4, width=4, font="Helvetica 11")
+    ButtonVorderg = tk.Button(Fenster, bd=3, text=TxT["VGfarbe"], font="Helvetica 11", command=Vordergrund_Einstellen)
+    ButtonHinterg = tk.Button(Fenster, bd=3, text=TxT["HGfarbe"], font="Helvetica 11", command=Hintergrund_Einstellen)
+    ButtonSchema = tk.Button(Fenster, bd=3, text=TxT["FFschema"], font="Helvetica 11", command=Fensterfarbschema)
+    TextM3uVerz = tk.Label(Fenster, text=TxT["pVerzeichnis"], font="Helvetica 10")
+    EingabeM3uVerz = tk.Entry(Fenster, bd=4, width=38, font="Helvetica 11")
+    TextRecVerz = tk.Label(Fenster, text=TxT["rVerzeichnis"], font="Helvetica 10")
+    EingabeRecVerz = tk.Entry(Fenster, bd=4, width=38, font="Helvetica 11")
+    TextStartDat = tk.Label(Fenster, text=TxT["sDatei"], font="Helvetica 10")
+    EingabeStartDat = tk.Entry(Fenster, bd=4, width=38, font="Helvetica 11")    
+    ButtonSpeichern = tk.Button(Fenster, bd=3, text=TxT["Speichern"], font="Helvetica 11", command=Einstellungen_Speichern)
+    ButtonAbbrechen = tk.Button(Fenster, bd=3, text=TxT["Abbrechen"], font="Helvetica 11", command=Fenster.destroy)
 
-    Radio_Deutsch.grid(row=1, column=0, padx=25, pady=20, ipadx=12, ipady=3, sticky="e")
-    Radio_English.grid(row=1, column=1, padx=25, pady=20, ipadx=12, ipady=3, sticky="w")
-    Check_StartBild.grid(row=2, column=0, columnspan=2, pady=1, ipadx=50, sticky="w")
-    Check_Protokoll.grid(row=3, column=0, columnspan=2, pady=10, ipadx=50, sticky="w")
-    SizeMText.grid(row=4, column=0, columnspan=2, pady=4, ipadx=60, sticky="w")
-    SizeMEingabe.grid(row=4, column=1, padx=62, pady=4, sticky="e")
-    SizeLText.grid(row=5, column=0, columnspan=2, pady=4, ipadx=60, sticky="w")
-    SizeLEingabe.grid(row=5, column=1, padx=62, pady=4, sticky="e")
-    Button_Vorderg.grid(row=6, column=0, columnspan=2, padx=50, pady=14, ipadx=57)
-    Button_Hinterg.grid(row=7, column=0, columnspan=2, padx=50, pady=4, ipadx=59)
-    Button_Standard.grid(row=8, column=0, columnspan=2, padx=50, pady=14, ipadx=47)
-    m3uText.grid(row=9, column=0, columnspan=2, pady=1)
-    m3uEingabe.grid(row=10, column=0, columnspan=2, pady=8)
-    recText.grid(row=11, column=0, columnspan=2, pady=1)
-    recEingabe.grid(row=12, column=0, columnspan=2, pady=8)
-    startText.grid(row=13, column=0, columnspan=2, pady=1)
-    startEingabe.grid(row=14, column=0, columnspan=2, pady=8)
-    ButtonSpeichern.grid(row=15, column=0, padx=20, pady=20, ipadx=12, sticky="e")
-    ButtonAbbrechen.grid(row=15, column=1, padx=20, pady=20, ipadx=12, sticky="w")
+    RadioDeutsch.grid(row=1, column=0, padx=25, pady=20, ipadx=12, ipady=3, sticky="e")
+    RadioEnglish.grid(row=1, column=1, padx=25, pady=20, ipadx=12, ipady=3, sticky="w")
+    CheckZUmbruch.grid(row=2, column=0, columnspan=2, pady=1, ipadx=50, sticky="w")
+    CheckProtokoll.grid(row=3, column=0, columnspan=2, pady=10, ipadx=50, sticky="w")
+    TextSizeM.grid(row=4, column=0, columnspan=2, pady=4, ipadx=60, sticky="w")
+    EingabeSizeM.grid(row=4, column=1, padx=62, pady=4, sticky="e")
+    TextSizeL.grid(row=5, column=0, columnspan=2, pady=4, ipadx=60, sticky="w")
+    EingabeSizeL.grid(row=5, column=1, padx=62, pady=4, sticky="e")
+    ButtonVorderg.grid(row=6, column=0, columnspan=2, padx=50, pady=14, ipadx=57)
+    ButtonHinterg.grid(row=7, column=0, columnspan=2, padx=50, pady=4, ipadx=59)
+    ButtonSchema.grid(row=8, column=0, columnspan=2, padx=50, pady=14, ipadx=47)
+    TextM3uVerz.grid(row=9, column=0, columnspan=2, pady=1)
+    EingabeM3uVerz.grid(row=10, column=0, columnspan=2, pady=8)
+    TextRecVerz.grid(row=11, column=0, columnspan=2, pady=1)
+    EingabeRecVerz.grid(row=12, column=0, columnspan=2, pady=8)
+    TextStartDat.grid(row=13, column=0, columnspan=2, pady=1)
+    EingabeStartDat.grid(row=14, column=0, columnspan=2, pady=8)
+    ButtonSpeichern.grid(row=15, column=0, padx=22, pady=20, ipadx=15, sticky="e")
+    ButtonAbbrechen.grid(row=15, column=1, padx=22, pady=20, ipadx=12, sticky="w")
     tk.Label(Fenster).grid(row=16, column=0)
 
     GebietButton.set(Gebiet)
-    SizeMEingabe.insert(0, SizeM)
-    SizeLEingabe.insert(0, SizeL)
-    m3uEingabe.insert(0, m3uVerzeichnis)
-    recEingabe.insert(0, recVerzeichnis)
-    startEingabe.insert(0, startDatei)
+    EingabeSizeM.insert(0, SizeM)
+    EingabeSizeL.insert(0, SizeL)
+    EingabeM3uVerz.insert(0, m3uVerzeichnis)
+    EingabeRecVerz.insert(0, recVerzeichnis)
+    EingabeStartDat.insert(0, startDatei)
     ButtonSpeichern.bind("<Return>", Einstellungen_Speichern)
     ButtonAbbrechen.bind("<Return>", lambda event: Fenster_Schliessen(Fenster))
     Fenster.bind("<Escape>", lambda event: Fenster_Schliessen(Fenster))
@@ -1523,7 +1532,7 @@ def Hilfe_Tastatur(event=None):
     Fenster.title(TxT["Tastatur"])
     Fenster.wm_attributes("-topmost", True)
     Fenster.grab_set()
-    Text_Fenster = tk.Text(Fenster, width=44, height=35, pady=10, padx=10)
+    Text_Fenster = tk.Text(Fenster, width=44, height=36, pady=10, padx=10)
     Text_Fenster.config(foreground=FensterVG, background=FensterHG, font="Monospace 10", wrap="none")
     Text_Fenster.pack(fill="both", padx=3, pady=3)
     Text_Fenster.configure(state="normal")
@@ -1533,7 +1542,7 @@ def Hilfe_Tastatur(event=None):
     for i in range(len(keyListe)):
         Text_Fenster.insert(tk.END, "   " + keyListe[i][0:] + "\n")
         if i == 1:  Text_Fenster.insert(tk.END, "\n")
-        if i == 9:  Text_Fenster.insert(tk.END, "\n")
+        if i == 10:  Text_Fenster.insert(tk.END, "\n")
     Text_Fenster.insert(tk.END, "\n   Scroll page:          <PgUp/PgDn>\n")
     Text_Fenster.insert(tk.END, "   Go to top:            <Home>\n")
     Text_Fenster.insert(tk.END, "   Go to end:            <End>\n")
@@ -1572,7 +1581,7 @@ def Hilfe_Ueber():
     else:
         tk.Label(Fenster).pack()
     Zeile1 = tk.Label(Fenster, text="Stream Recorder", font="Helvetica 18 bold")
-    Zeile2 = tk.Label(Fenster, text="Version 1.44", font="Helvetica 12")
+    Zeile2 = tk.Label(Fenster, text="Version 1.45", font="Helvetica 12")
     Einblenden.Zeichenkette = TxT["Entwickelt"]
     Lauftext.set(Einblenden.Zeichenkette[0:43])
     Zeile3 = tk.Label(Fenster, textvariable=Lauftext, font="Helvetica 12")
@@ -1617,11 +1626,15 @@ def Programm_Beenden(event=None):
         Master.destroy()
     else:
         if message.askokcancel("Stream Recorder", "\n" + TxT["wirklich beenden"]):
-            subprocess.Popen('killall ffmpeg', shell=True)
-            if not ProtMeldAus.get():  
-                with open(protDatei, "a") as Datei:
-                    Datei.write(time.strftime("%d.%m.%y %H:%M > ") + "Alle Aufnahmen vom Benutzer beendet.\n")
-                    Datei.close()
+            for i in range(len(recPID)):
+                try:
+                    os.killpg(int(recPID[i]), signal.SIGTERM)
+                except:
+                    pass
+                if not ProtMeldAus.get():  
+                    with open(protDatei, "a") as Datei:
+                        Datei.write(time.strftime("%d.%m.%y %H:%M > ") + TxT["Beendet Benutzer"] + recName[i] + "\n")
+                        Datei.close()
             Master.destroy()
 
 ###############################################################################################################
@@ -1676,7 +1689,7 @@ Menu_Favoriten.add_command(label=TxT["Zurück"], command=Favoriten_Zurueck, acce
 Menu_Aufnahme.add_command(label=TxT["Stoppen"], command=Aufnahme_Stoppen, accelerator=TxT["Ctrl"]+"A> ")
 Menu_Aufnahme.add_command(label=TxT["AlleStop"], command=Alle_Beenden)
 Menu_Aufnahme.add_separator()
-Menu_Aufnahme.add_checkbutton(label=TxT["Youtube"], variable=youtube_dl)
+Menu_Aufnahme.add_command(label=TxT["Manager"], command=Download_Manager, accelerator=" <F6> ")
 Menu_Aufnahme.add_separator()
 Menu_Aufnahme.add_command(label=TxT["Protokoll"], command=Protokoll_Anzeigen, accelerator=TxT["Ctrl"]+"P> ")
 
@@ -1720,18 +1733,19 @@ Listen_Box.bind(keyListe[3][22:], Favoriten_Zurueck)
 Listen_Box.bind(keyListe[4][22:], Alle_Anzeigen)
 Listen_Box.bind(keyListe[5][22:], Player_Auswaehlen)
 Listen_Box.bind(keyListe[6][22:], User_Agent_Aendern)
-Listen_Box.bind(keyListe[7][22:], Einstellungen)
-Listen_Box.bind(keyListe[8][22:], Favoriten_Eingeben)
-Listen_Box.bind(keyListe[9][22:], Schedule_Hinzufuegen)
-Listen_Box.bind(keyListe[10][22:], Aufnahme_Stoppen)
-Listen_Box.bind(keyListe[11][22:], Protokoll_Anzeigen)
-Listen_Box.bind(keyListe[12][22:], Favoriten_Anzeigen)
-Listen_Box.bind(keyListe[13][22:], Favoriten_Hinzufuegen)
-Listen_Box.bind(keyListe[14][22:], Datei_Oeffnen)
-Listen_Box.bind(keyListe[15][22:], Datei_Bearbeiten)
-Listen_Box.bind(keyListe[16][22:], Schedule_Anzeigen)
-Listen_Box.bind(keyListe[17][22:], Schedule_Bearbeiten)
-Listen_Box.bind(keyListe[18][22:], Programm_Beenden)
+Listen_Box.bind(keyListe[7][22:], Download_Manager)
+Listen_Box.bind(keyListe[8][22:], Einstellungen)
+Listen_Box.bind(keyListe[9][22:], Favoriten_Eingeben)
+Listen_Box.bind(keyListe[10][22:], Schedule_Hinzufuegen)
+Listen_Box.bind(keyListe[11][22:], Aufnahme_Stoppen)
+Listen_Box.bind(keyListe[12][22:], Protokoll_Anzeigen)
+Listen_Box.bind(keyListe[13][22:], Favoriten_Anzeigen)
+Listen_Box.bind(keyListe[14][22:], Favoriten_Hinzufuegen)
+Listen_Box.bind(keyListe[15][22:], Datei_Oeffnen)
+Listen_Box.bind(keyListe[16][22:], Datei_Bearbeiten)
+Listen_Box.bind(keyListe[17][22:], Schedule_Anzeigen)
+Listen_Box.bind(keyListe[18][22:], Schedule_Bearbeiten)
+Listen_Box.bind(keyListe[19][22:], Programm_Beenden)
 
 #-----------------------------------------------------
 
@@ -1744,3 +1758,4 @@ Master.protocol("WM_DELETE_WINDOW", Programm_Beenden)
 Master.mainloop()
 
 ###############################################################################################################
+
