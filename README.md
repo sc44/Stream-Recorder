@@ -9,7 +9,7 @@ Stream Recorder plays and records video streams.
 - Adding streams to favorites.
 - Selectable streams from history.
 - Timer shots once, daily or weekly.
-- Use youtube-dl and yt-dlp for more downloads.
+- Use youtube-dl or yt-dlp for more downloads.
 - Media Player freely selectable (splayer.conf).
 - User Agent freely selectable (useragent.conf).
 - Directories can be customized.
