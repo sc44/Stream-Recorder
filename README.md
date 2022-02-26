@@ -5,15 +5,15 @@ Stream Recorder plays and records video streams.
 
 ### Features:
 - Supports standard m3u files.
-- Build your own playlists.
-- Adding streams to favorites.
-- Selectable streams from history.
+- Create your own playlists.
+- Add streams to favorites.
+- Select streams from history.
 - Timer shots once, daily or weekly.
 - Use youtube-dl or yt-dlp for more downloads.
 - Media Player freely selectable (splayer.conf).
 - User Agent freely selectable (useragent.conf).
+- Color and font size changeable.
 - Directories can be customized.
-- Color and font size can be changed.
 - Language in English and German.
 - and much more ...
 
@@ -23,7 +23,7 @@ Stream Recorder plays and records video streams.
 
 - python3
 - python3-tk (tkinter)
-- ffmpeg (with ffplay)
+- ffmpeg (ffplay)
 - optional additional media player
 - optional youtube-dl and yt-dlp
 
