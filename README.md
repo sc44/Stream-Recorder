@@ -23,13 +23,14 @@ Stream Recorder plays and records video streams.
 
 - python3
 - python3-tk (tkinter)
-- ffmpeg (with ffplay), optional additional media player
+- ffmpeg (with ffplay)
+- optional additional media player
 - optional youtube-dl and yt-dlp
 
 ### Tested with:
 
 - Arch Linux
-- Linux-Mint 20
+- Linux-Mint
 - Ubuntu
 
 ### License:
