@@ -35,7 +35,6 @@ the desired line number must then be entered. So each stream can be recorded wit
 
 - Arch Linux 
 - https://aur.archlinux.org/packages/streamrecorder
-
 - Linux-Mint
 - Ubuntu
 
