@@ -48,11 +48,6 @@ For this reason the recordings must be stopped by user or timer.
 On the other hand, videos can be recorded at any time and do not have to be terminated. However, this results in "dead" 
 entries in the recording list. These do not further disturb and after end of recording they can be ignored or deleted.
 
-### Useful playlists:
-
-https://iptv-org.github.io/iptv/index.m3u
-https://github.com/iptv-restream/iptv-channels
-
 ### Arch Linux install:
 
 https://aur.archlinux.org/packages/streamrecorder
