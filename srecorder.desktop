@@ -1,8 +1,8 @@
 [Desktop Entry]
-Version=1.0
-Type=Application
 Name=Stream Recorder
-Comment=Simple stream viewer and recorder.
+GenericName=Video Stream Recorder
+Version=1.5
+Comment=Plays and records video streams
 Exec=srecorder.py %f
 Icon=srecorder
 Terminal=false

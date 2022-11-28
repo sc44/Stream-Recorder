@@ -1,0 +1,134 @@
+
+Stream-Recorder Schnellstart:
+==============================
+
+
+Funktionen:
+------------
+
+- Mit dem Stream-Recorder kann man Video-Streams anschauen und aufnehmen.
+
+- Die benötigten Media Player sind frei wählbar und die Player-Liste beliebig erweiterbar.
+
+- Alle gängigen und von youtube_dl unterstützten Streams können aufgenommen werden.
+
+- Aufnahmen mit dem eingebaute Timer können einmalig, täglich oder wöchentlich erfolgen.
+
+- Es werden alle standard m3u/m3u8-Dateien unterstützt.
+
+- Grosse m3u-Dateien kann man nach Suchbegriffen filtern und neu abspeichern.
+
+- Lieblingssender können zu einer Favoritenliste hinzugefügt werden.
+
+- In der Play-History kann zurück und wieder vor gesprungen werden.
+
+- Die Arbeitsverzeichnisse können individuell angepasst werden.
+
+- Farbe und Schriftgröße kann man auf die eigenen Bedürfnisse einstellen.
+
+- Das Programm ist in deutscher und englischer Sprache.
+
+
+
+Bedienung:
+-----------
+
+Stream auswählen:      <linke Maustaste>  oder  <Pfeiltaste hoch/runter>  
+
+Stream anschauen:      <Doppelklick links>  oder  <Eingabetaste>
+vorheriger Stream:     <Pfeiltaste links/rechts>
+
+Stream aufnehmen:      <Leertaste> oder <mittlere Maustaste>  
+Aufnahme beenden:      <Strg+T>
+
+Seite blättern:        <Bild hoch/runter>
+zum Seitenanfang:      <Pos1>
+zum Seitenende:        <Ende>
+
+Player auswählen:      <F5> oder <rechte Maustaste>
+User-Agent auswählen:  <F6>
+Download-Manager:      <F7>
+
+Favoriten anzeigen:    <Strg+F>
+Favoriten hinzufügen:  <F4>
+Favoriten verschieben: <Alt+hoch/runter>
+Favoriten bearbeiten:  <Strg+A>
+Favoriten löschen:     <Entf>
+
+neuen Link eingeben:   <Strg-N>
+neue Playliste:        <Strg-O>
+vorherige Playliste:   <F2>
+neue Timer Aufnahme:   <F8>
+Geplante Aufnahmen:    <Strg+S>
+
+Einstellungen:         <F9>
+Protokoll anzeigen:    <Strg-P>
+Hilfe-Tastatur:        <F1>
+
+
+
+Verwendung des Download-Managers:
+---------------------------------
+
+Zur Zeit können die beiden Download-Manager youtube-dl und yt-dlp eingebunden werden, vorausgesetzt sie
+sind auch installiert. Mit ihnen können auch Streams und Videos aufgenommen werden, die normalerweise
+nicht zur Verfügung stehen. Es ist zu beachten, dass es vereinzelt Sender gibt die mit eingebundenem
+Download-Manager nicht mehr aufzunehmen sind.
+
+                           ohne  | yt-dlp | youtube-dl
+-------------------------------------------------------
+Youtube Streams          |   -   |    X   |    X
+Youtube Videos           |   -   |    X   |    X
+Youtube 18+              |   -   |    X   |    -
+diverse 18+ Videos       |   -   |    X   |    X
+die meisten TV-Streams   |   X   |    X   |    X
+manchen TV-Streams (ZDF) |   X   |    -   |    -
+ARD-Mediathek            |   -   |    X   |    X
+Pluto TV                 |   -   |    -   |    X
+
+Um im Schedule einzelne Streams mit unterschiedlichen Aufnahmeoptionen zu starten, kann der Download-Manager 
+im Experten-Modus gestartet werden. Damit können dann individuelle Download-Befehlszeilen erstellt werden.
+Die entsprechende Zeilennummer muss dann im Schedule angegeben werden.
+
+Für Schedule-Aufnahmen im Standard-Modus gilt:
+
+   1  =  keinen Download-Manager einbinden
+   2  =  youtube-dl als Download-Manager einbinden
+   3  =  yt-dlp als Download-Manger einbinden
+
+Die aktuell eingestellte Option wird bei der Eingabe im Schedule automatisch übernommen. 
+
+
+
+Zappen mit dem Stream-Recorder:
+--------------------------------
+
+Mit einigen Media-Playern kann man mit dem Stream-Recorder auch durch die Senderliste zappen, 
+zu ihnen gehören z.B. Celluloid, SMPlayer und umpv.
+
+Zieht man das Hauptfenster relativ schmal zusammen, sodass nur noch die Sendernamen zu sehen sind 
+und positioniert dann das Fenster des Media-Players daneben (nicht überlappend), kann man wie beim TV durch die 
+Programme zappen, bei Bedarf eine Aufnahme starten und weiter zappen.
+
+Mit den Pfeiltasten links/rechts ist es möglich in der Liste der geschauten Sender zurück und wieder 
+vor zuspringen. Für Besitzer einer USB-Fernbedienung ist das Fernseh-Feeling dann perfekt.
+
+
+
+Ergänzende Information: 
+-----------------------
+
+Wie der Programmname schon vermuten lässt handelt es sich hier um einen Stream Recorder. Die Tatsache, 
+dass man damit auch YT-Videos und diverse xSeiten runterladen kann, ist nur ein netter Nebeneffekt.
+
+Streams werden wie beim Fernsehen zu bestimmten Zeiten gesendet, wie z.B. die Tageschau um 20:00 Uhr. 
+Deshalb wurde für die Aufnahmen ein Schedule mit Timer eingebaut. Außerdem laufen Streams "endlos" 
+weiter wenn sie nicht gestoppt werden, sodaß irgendwann die Festplatte an ihre Grenze kommt. 
+Darum müssen die Aufnahmen explizit vom Benutzer oder vom Timer beendet werden.
+
+Videos hingegen können jederzeit aufgenommen werden und müssen auch nicht explizit beendet werden. 
+Dabei entstehen allerdings in der Aufnahmeliste "tote" Einträge, die aber nicht weiter stören und nach
+Aufnahmeende ignoriert oder gelöscht werden können.
+
+
+
