@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 #
-#  StreamRecorder v1.54 - Update: 12.01.2026
+#  StreamRecorder v1.55 - Update: 28.01.2026
 #
 ###############################################################################################################
 
@@ -16,6 +16,7 @@ import signal
 import subprocess
 import time
 import datetime
+import requests
 import urllib.request
 import urllib.error
 
@@ -26,21 +27,27 @@ else:                                 WINDOWS = False
 print(platform.platform())
 print("Python Version " + platform.python_version())
 
-Name = [""]
-Land = [""]          # tvg-country
-Sprache = [""]       # tvg-language
-Gruppe = [""]        # group-title
-URL = [""]
+Name = []
+Land = []            # tvg-country
+Sprache = []         # tvg-language
+Gruppe = []          # group-title
+URL = []
 
-Puffer = [""]
-sPuffer = [""]
+Puffer = []
+sPuffer = []
 recPID = [0]         # Aufnahme
-recName = [""]
-recStart = [""]
-recEnde = [""]
-hisName = [""]       # History
-hisURL = [""]
+recName = []
+recStart = []
+recEnde = []
+hisName = []         # History
+hisURL = []
 hisIdx = -1
+epgID = []           # EPG
+epgLand = []
+epgName = []
+epgTag = 0
+epgTitel = []
+epgDesc = []
 
 StatusAnzahl = 0
 StatusAufnahmen = 0
@@ -52,7 +59,7 @@ WochenText = "-------"
 Suchbereich = 0           # 0=nichts, 1=Name, 2=Land, 3=Sprache, 4=Gruppe
 Suchbegriff = ""
 
-HauptGeo = "770x875+300+50"
+HauptGeo = "900x900+200+20"
 Vordergrund = "#ffffcc"
 Hintergrund = "#000066"
 FensterVG = "#000000"
@@ -183,7 +190,8 @@ gListe = ["Allgemein","Animation","Auto","Bildung","Business","Classic","Comedy"
 
 Woerterbuch = { \
 "de" : {"Datei":" Datei ","Suchen":" Suchen ","Favoriten":" Favoriten ","Aufnahme":" Aufnahme ","Schedule":" Schedule ",
-        "Hilfe":" Hilfe ","Öffnen":"  Öffnen ","Bearbeiten":"  Bearbeiten ","History":"  Sender History","Player":"  Player wählen ",
+        "Hilfe":" Hilfe ","Öffnen":"  Öffnen ","Bearbeiten":"  Bearbeiten ","EPG":"  TV Programm ",
+        "Deutschland":"   Deutschland ","Weltweit":"   Weltweit ","History":"  Sender History","Player":"  Player wählen ",
         "UserAgent":"  User-Agent ändern ","Einstellungen":"  Einstellungen ","Beenden":"  Beenden ","Name":"  Sendername ",
         "Land":"  Land ","Sprache":"  Sprache ","Gruppe":"  Gruppe ","SuchSpeich":"  Suche speichern","AlleZeig":"  Alle anzeigen ",
         "Anzeigen":"  Anzeigen ","Hinzufügen":"  Hinzufügen ","Entfernen":"  Entfernen ","Eingeben":"  Neuer Stream","Zurück":"  Zurück ",
@@ -195,7 +203,7 @@ Woerterbuch = { \
         "nicht uebernommen":" Ungültige wurden nicht übernommen. ","nicht gefunden":" nicht gefunden.  ","hinzu":" wurde hinzugefügt. ",
         "fName":"Name:","fLand":"Land:","fSprache":"Sprache:","fGruppe":"Gruppe:","Laufende Aufnahmen":"Laufende Aufnahmen",
         "kein Suchfilter":" Zuerst eine Suche starten.  ","Begriff auswählen":"Suchbegriff auswählen:","Auswahl":"Auswahl",
-        "Mo":"Mo","Di":"Di","Mi":"Mi","Do":"Do","Fr":"Fr","Sa":"Sa","So":"So",
+        "Keine Beschreibung":" Keine Programmbeschreibung ","Mo":"Mo","Di":"Di","Mi":"Mi","Do":"Do","Fr":"Fr","Sa":"Sa","So":"So",
         # Meldungen
         "Pruefen Status":"Pause = <Leertaste>    Liste speichern = <Strg+S>    Abbrechen = <Esc>",
         "Filtern Status":"Pause = <Leertaste>    Abbrechen = <Esc>","Begriff eingeben":"Suchbegriff eingeben:",
@@ -216,7 +224,8 @@ Woerterbuch = { \
         "Entwickelt":" ++++ Entwickelt von Woodstock & sc44 ++++ Dieses Programm wird unter den Bedingungen der GNU General Public License veröffentlicht, Copyright (C) 2026."},
 
 "en" : {"Datei":" File ","Suchen":" Search ","Favoriten":" Favorites ","Aufnahme":" Recording ","Schedule":" Schedule ",
-        "Hilfe":" Help ","Öffnen":"  Open ","Bearbeiten":"  Edit ","History":"  Channel history","Player":"  Player ",
+        "Hilfe":" Help ","Öffnen":"  Open ","Bearbeiten":"  Edit ","EPG":"  TV Guide",
+        "Deutschland":"   Germany ","Weltweit":"   Worldwide ","History":"  Channel history","Player":"  Player ",
         "UserAgent":"  User-Agent ","Einstellungen":"  Settings ","Beenden":"  Exit ","Name":"  Channel name",
         "Land":"  Country ","Sprache":"  Language ","Gruppe":"  Category ","SuchSpeich":"  Save search","AlleZeig":"  List all ",
         "Anzeigen":"  Display ","Hinzufügen":"  Add channel ","Entfernen":"  Delete ","Eingeben":"  New stream","Zurück":"  Back ",
@@ -228,7 +237,7 @@ Woerterbuch = { \
         "nicht uebernommen":" Invalid entries were not saved. ","nicht gefunden":" not found.  ","hinzu":" was added. ",
         "fName":"Name:","fLand":"Country:","fSprache":"Language:","fGruppe":"Group:","Laufende Aufnahmen":"Active recordings",
         "kein Suchfilter":" At first start a search.  ","Begriff auswählen":"Select a search term:","Auswahl":"Selection",
-        "Mo":"Mon","Di":"Tue","Mi":"Wed","Do":"Thu","Fr":"Fri","Sa":"Sat","So":"Sun",
+        "Keine Beschreibung":" No channel description ","Mo":"Mon","Di":"Tue","Mi":"Wed","Do":"Thu","Fr":"Fri","Sa":"Sat","So":"Sun",
         # Meldungen
         "Pruefen Status":"Pause = <Space>     Save list = <Ctrl+S>    Cancel = <Esc>",
         "Filtern Status":"Pause = <Space>     Cancel = <Esc>","Begriff eingeben":"Enter a search term:",
@@ -248,10 +257,36 @@ Woerterbuch = { \
         "Groesse Fenster":"The main window size or position has been changed.  \n\n  Do you want to save the new coordinates?  ",
         "Entwickelt":" +++++ Developed by Woodstock & sc44 +++++ This program is published under the terms of the GNU General Public License, Copyright (C) 2026."} }  
 
+EPG_Sender = [
+        "76674, Das Erste","76627, ZDF","76740, RTL","76664, SAT.1","76762, ProSieben","438457, RTLZWEI","76792, kabel eins",
+        "76704, VOX","76684, WDR","76748, NDR","76648, HR","76730, MDR","76751, RBB","76693, SWR","76712, BR","76682, 3sat",
+        "76641, ARTE","76649, PHOENIX","76718, ZDF info","76739, ZDF neo","76738, ONE","76708, Tele 5","76787, NITRO","76722, RTLup",
+        "76716, SAT.1 Gold","76702, ProSieben MAXX","76614, sixx","76767, SUPER RTL","76769, SAT.1 emotions","76749, ProSieben Fun",
+        "76725, kabel eins CLASSICS","76796, VOXup","76619, Eurosport","76744, Eurosport 2","76659, SPORT1","76754, SPORT1+",
+        "438444, ntv","76795, WELT","76696, tagesschau24","438466, ARD alpha","438462, euronews","76797, CNN International",
+        "76639, Bloomberg Europe TV","182674, DF1","438440, Welt der Wunder TV","379181, DOKUSAT","438452, The HISTORY Channel",
+        "438453, Prime HD","438450, Servus TV Österreich","438442, ORF 1","76616, ORF 2","76734, ORF III","76756, ORF SPORT +",
+        "76784, SRF 1","76772, SRF zwei","76715, kabel eins Doku","76636, N24 Doku","76714, SPIEGEL Geschichte","76692, DMAX",
+        "76628, Nat Geo HD","76638, ATV II","76699, TLC","76662, Universal Channel HD","76686, Discovery HD","76783, NAT GEO WILD",
+        "76800, GEO Television","76759, Animal Planet","76700, RTL Crime","76667, Crime + Investigation","438455, DMF",
+        "76804, RTL Passion","76731, RiC","76770, Kinowelt TV","76645, Warner TV Film","76806, Warner TV Serie","76679, Warner TV Comedy",
+        "76745, ANIXE","76742, COMEDY CENTRAL","76736, Nicktoons ","76622, Nick Jr.","438460, 13th Street Universal","76789, TOGGO plus",
+        "76763, Cartoon Network","76680, KiKA","76786, Disney Channel","438467, Fix & Foxi","76631, Silverline","76658, Star TV",
+        "76776, Marco Polo TV","76675, Heimatkanal","76624, Romance TV","76732, PULS 4","76808, PULS acht","76646, Curiosity Channel",
+        "76673, RTL Living","438449, Home & Garden TV","76794, Bibel TV","76805, K-TV","76688, Bergblick","76666, münchen TV","76810, ATV",
+        "76701, Hamburg 1","76710, Leipzig Fernsehen","76809, DELUXE MUSIC","76803, GoldStar TV","76758, Gute Laune TV","76780, MTV",
+        "76775, Fashion TV","76642, Beate-Uhse.TV","76660, Playboy TV","76685, Adult Channel","76713, Lust Pur","76765, More than Sports TV",
+        "438446, Auto Motor Sport","76630, Motorvision TV","438441, sportdigital Fussball","76707, eSports1","76690, EXTREME SPORTS",
+        "76661, HSE","76737, HSE Extra ","76697, QVC","76618, QVC2","76773, 123.tv","76781, sonnenklar.TV","76632, DAZN",
+        "76733, Sky Sport News","10781, Sky Sport F1","464744, Sky Sport Bundesliga 1","438445, Sky Sport Premier League",
+        "210645, Sky Sport Golf","10634, Sky Sport Tennis","10675, Sky Sport Top Event","438458, Sky Cinema Action HD",
+        "438459, Sky Cinema Classics HD","10908, Sky Crime","438465, Sky Cinema Family HD","438461, Sky Cinema Premiere HD",
+        "10620, Sky Documentaries","76663, Sky Krimi","10640, Sky Nature","10918, Sky Showcase","10635, Sky Replay" ]
+
 ###############################################################################################################
 
 Master = tk.Tk()
-Master.title("Stream Recorder v1.54")
+Master.title("Stream Recorder v1.55")
 Master.option_add("*Dialog.msg.font", "Helvetica 11")        # Messagebox Schriftart
 Master.option_add("*Dialog.msg.wrapLength", "50i")           # Messagebox Zeilenumbruch
 
@@ -409,6 +444,7 @@ if PlayerPruefen.get() == 0:
         if not os.path.isfile("/usr/bin/ffmpeg") and not os.path.isfile("/usr/local/bin/ffmpeg"):
             message.showwarning("Stream Recorder", "\n FFmpeg" + TxT["nicht gefunden"])
 
+###############################################################################################################
 ###############################################################################################################
 
 def Datei_Oeffnen(event=None):
@@ -722,6 +758,7 @@ def Suche_Speichern():
             message.showinfo(TxT["SuchSpeich"], "\n" + TxT["Gespeichert in"] + os.path.basename(DateiNeu))
 
 ###############################################################################################################
+###############################################################################################################
 
 def Favoriten_Anzeigen(event=None):
 
@@ -965,7 +1002,7 @@ def Favoriten_Hochschieben(event=None):
     if Listen_Box.curselection() and os.path.basename(m3uDatei) == "favoriten.m3u":
 
         Nr = Listen_Box.curselection()[0]            # Index des markierten Senders
-        if Nr >= 1:
+        if Nr > 0:
             Puffer[Nr*2-2], Puffer[Nr*2]   = Puffer[Nr*2],   Puffer[Nr*2-2]    # #EXTINF
             Puffer[Nr*2-1], Puffer[Nr*2+1] = Puffer[Nr*2+1], Puffer[Nr*2-1]    # URL
 
@@ -989,7 +1026,7 @@ def Favoriten_Runterschieben(event=None):
     if Listen_Box.curselection() and os.path.basename(m3uDatei) == "favoriten.m3u":
 
         Nr = Listen_Box.curselection()[0]            # Index des markierten Senders
-        if Nr < len(Puffer)/2-2:
+        if Nr < len(Puffer)/2-1:
             Puffer[Nr*2+2], Puffer[Nr*2]   = Puffer[Nr*2],   Puffer[Nr*2+2]    # #EXTINF
             Puffer[Nr*2+3], Puffer[Nr*2+1] = Puffer[Nr*2+1], Puffer[Nr*2+3]    # URL
 
@@ -1006,7 +1043,244 @@ def Favoriten_Runterschieben(event=None):
 
     return "break"                                   # eingebautes <Alt-Runter> in tk.Listbox verhindern
 
-###############################################################################################################
+###################################################################################################################
+###################################################################################################################
+
+class TT_Listbox(tk.Listbox):
+
+    def __init__(self, master, **kw):
+        super().__init__(master, **kw)
+        self.bind("<Motion>", self.Maus_Motion)
+        self.bind("<Leave>", self.Maus_Leave)
+        self.tFenster = None
+
+    def Maus_Motion(self, event):
+        idx = self.nearest(event.y)
+        if idx >= 0:
+            self.Tooltip_Anzeigen(epgDesc[idx], event.x_root, event.y_root)
+
+    def Maus_Leave(self, event=None):
+        if self.tFenster:
+            self.tFenster.destroy()
+            self.tFenster = None
+
+    def Tooltip_Anzeigen(self, beschreibung, x, y):
+        self.Maus_Leave()
+        self.tFenster = tk.Toplevel(self)
+        self.tFenster.wm_overrideredirect(True)      # Rahmenloses Fenster
+        self.tFenster.wm_geometry(f"+{x+20}+{y}")    # 20 Pixel rechts vom Mauszeiger
+        label = tk.Label(self.tFenster, text=beschreibung, font="Helvetica 11", fg=FensterVG, bg=FensterHG,
+                                        padx=5, pady=5, justify="left", wraplength=350, relief="solid", borderwidth=1)
+        label.pack()
+
+###################################################################################################################
+
+def EPG_Anzeigen(land):
+
+    def Info_Anzeigen(event=None):
+
+        link = "https://epg.pw/api/epg.xml?lang=en&timezone=RXVyb3BlL0Jlcmxpbg%3D%3D"
+        datum = datetime.date.today() + datetime.timedelta(days=epgTag)
+        datum = "&date=" + datum.strftime("%Y%m%d")
+
+        if Sender_Liste.curselection():
+            idx = Sender_Liste.curselection()[0]
+            ch_id = "&channel_id=" + epgID[idx]
+            URL = link + datum + ch_id                                  # URL zusammenbauen
+            try:
+                xml_dat = requests.get(URL, timeout=5)
+            except requests.exceptions.Timeout:
+                Info_Liste.insert("end", "  EPG download error: timed out")
+            else:
+                if xml_dat.status_code != 200:
+                    Info_Liste.insert("end", "  EPG download error: " + str(xml_dat.status_code))
+                else:
+                    sFenster.title(land)
+                    Info_Liste.delete("0", "end")
+                    xml_text = str(xml_dat.text)
+                    x = y = z = v = w = 0
+                    epgTitel.clear()
+                    epgDesc.clear()
+                    while 1:  
+                        x = xml_text.find('start="', x)                 # Startzeit suchen
+                        if x == -1:    break
+                        y = xml_text.find('<title lang="', y)           # Titel-Anfang suchen
+                        z = xml_text.find("</title>", y+17)             # Titel-Ende suchen (ab Textanfang)
+                        v = xml_text.find("<desc", v)                   # Beschreibung-Anfang suchen
+                        epgTitel.append(xml_text[y+17:z])
+                        if xml_text[v+6:v+8] == "/>":
+                            epgDesc.append(TxT["Keine Beschreibung"])
+                        else:
+                            w = xml_text.find("</desc>", v+6)           # Beschreibung-Ende suchen (ab Textanfang)
+                            epgDesc.append(xml_text[v+6:w])
+                        Info_Liste.insert("end", "  " + xml_text[x+15:x+17] + ":" + xml_text[x+17:x+19] + " - " + xml_text[y+17:z])
+                        x += 50; y += 50; z += 50;v += 50; w += 50;
+
+
+    def Datum_Mausklick(tag):
+
+        global epgTag
+
+        Datum_Buttons[epgTag+3].config(font="Consolas 9")
+        epgTag = tag
+        Datum_Buttons[epgTag+3].config(font="Consolas 10 bold italic")
+        Info_Anzeigen()
+
+        return "break"                                                  # eingebaute <Pfeiltaste> in tk.Listbox verhindern
+
+    def Datum_Pfeiltaste(tag):
+
+        global epgTag
+
+        if tag == 1 and epgTag < 3 or tag == -1 and epgTag > -3:
+            Datum_Buttons[epgTag+3].config(font="Consolas 9")
+            epgTag += tag
+            Datum_Buttons[epgTag+3].config(font="Consolas 10 bold italic")
+            Info_Anzeigen()
+
+        return "break"                                                  # eingebaute <Pfeiltaste> in tk.Listbox verhindern
+
+#--------------------------------------------
+
+    sFenster = tk.Toplevel(Master)
+    sFenster.title("EPG")
+    sFenster.geometry("+" + str(Master.winfo_x()+10) + "+" + str(Master.winfo_y())) 
+    sFenster.wm_attributes("-topmost", True)
+
+    # Datum-Buttons
+    Datum_Frame = tk.Frame(sFenster, bg=Hintergrund)
+    Datum_Frame.pack(side="top", fill="x", padx=1, pady=1)
+    Datum_But1 = tk.Button(Datum_Frame, bd=3, command=lambda: Datum_Mausklick(-3))
+    Datum_But2 = tk.Button(Datum_Frame, bd=3, command=lambda: Datum_Mausklick(-2))
+    Datum_But3 = tk.Button(Datum_Frame, bd=3, command=lambda: Datum_Mausklick(-1))
+    Datum_But4 = tk.Button(Datum_Frame, bd=3, command=lambda: Datum_Mausklick(0))
+    Datum_But5 = tk.Button(Datum_Frame, bd=3, command=lambda: Datum_Mausklick(1))
+    Datum_But6 = tk.Button(Datum_Frame, bd=3, command=lambda: Datum_Mausklick(2))
+    Datum_But7 = tk.Button(Datum_Frame, bd=3, command=lambda: Datum_Mausklick(3))
+    Datum_Buttons = [Datum_But1,Datum_But2,Datum_But3,Datum_But4,Datum_But5,Datum_But6,Datum_But7,]
+    for i in range (7):
+        datum = datetime.date.today() + datetime.timedelta(days=i-3)
+        Datum_Buttons[i].config(text=datum.strftime(" %a %d.%m."), font="Consolas 9")
+        Datum_Buttons[i].grid(row=1, column=i+2, padx=3, pady=4)
+    # Sender-Liste
+    Sender_VScroll = tk.Scrollbar(sFenster, width=14)
+    Sender_Liste = tk.Listbox(sFenster, width=28, height=33, selectborderwidth=2, yscrollcommand=Sender_VScroll.set)
+    Sender_Liste.config(foreground=Vordergrund, background=Hintergrund, font="Helvetica 11")
+    Sender_VScroll.config(command=Sender_Liste.yview)
+    Sender_Liste.pack(side="left", fill="both", padx=3, pady=3, expand=True)
+    Sender_VScroll.pack(side="left", fill="y", padx=1, pady=1)
+    # Info-Liste
+    Info_VScroll = tk.Scrollbar(sFenster, width=14)
+    Info_HScroll = tk.Scrollbar(sFenster, width=14, orient="horizontal")
+    Info_Liste = TT_Listbox(sFenster, width=60, height=31, selectborderwidth=2, yscrollcommand=Info_VScroll.set, xscrollcommand = Info_HScroll.set)
+    Info_Liste.config(foreground=Vordergrund, background=Hintergrund, font="Consolas 10")
+    Info_VScroll.config(command=Info_Liste.yview)
+    Info_HScroll.config(command=Info_Liste.xview)
+    Info_HScroll.pack(side="bottom", fill="x", padx=1, pady=1)
+    Info_Liste.pack(side="left", fill="both", padx=2, pady=2, expand=True)
+    Info_VScroll.pack(side="left", fill="y", padx=1, pady=1)
+
+    Sender_Liste.delete(0, tk.END) 
+    for i in range(len(epgName)):
+        Sender_Liste.insert(tk.END, "   " + epgName[i])                 # Sendernamen in Liste
+    Sender_Liste.selection_set(0)
+    Sender_Liste.activate(0)
+    Sender_Liste.see(0)
+    Sender_Liste.focus_set()
+
+    Datum_Buttons[epgTag+3].config(font="Consolas 10 bold italic")      # Button für akt. Tag
+    Info_Anzeigen()                                                     # EPG für 1.Sender
+
+    Sender_Liste.bind("<Return>", Info_Anzeigen)
+    Sender_Liste.bind("<Double-Button-1>", Info_Anzeigen)
+    Sender_Liste.bind("<Left>", lambda event: Datum_Pfeiltaste(-1))     # eingebaute <Links-Taste> in tk.Listbox umgehen
+    Sender_Liste.bind("<Right>", lambda event: Datum_Pfeiltaste(1))     # eingebaute <Rechts-Taste> in tk.Listbox umgehen
+    sFenster.bind("<BackSpace>", lambda event: sFenster.destroy())
+    sFenster.bind("<Escape>", lambda event: sFenster.destroy())
+
+###################################################################################################################
+
+def EPG_Deutschland(event=None):
+
+    global epgID, epgName
+
+    epgID.clear()
+    epgName.clear()
+
+    for i in range(len(EPG_Sender)):
+        epgID.append(EPG_Sender[i].split(", ")[0])
+        epgName.append(EPG_Sender[i].split(", ")[1])
+
+    EPG_Anzeigen(TxT["Deutschland"])
+ 
+###################################################################################################################
+
+def EPG_Weltweit(event=None):
+
+    global epgID, epgLand, epgName
+
+    def Land_Anzeigen(event=None):
+
+        if Lander_Liste.curselection():
+            idx = Lander_Liste.curselection()[0]
+            epgID.clear()
+            epgName.clear()
+            with open(epgDatei, "r", encoding="utf-8") as Datei:
+                for Zeile in Datei:
+                    if Zeile.split(", ")[1] == auswahl[idx]:
+                        epgID.append(Zeile.split(", ")[0])
+                        epgName.append(Zeile.split(", ")[2].rstrip())    # ohne LF
+            EPG_Anzeigen(auswahl[idx])
+
+#--------------------------------------------
+
+    epgDatei = "epg_global.lst"
+    if not os.path.isfile(epgDatei):
+        epgDatei = cacheVerzeichnis + epgDatei
+        if not os.path.isfile(epgDatei):
+            message.showwarning("Stream Recorder", "\nDie Datei " + os.path.basename(epgDatei) + " wurde nicht gefunden.\n\
+                                                    \nBitte in . oder " + cacheVerzeichnis + " kopieren. ")
+            return
+
+    lFenster = tk.Toplevel(Master)
+    lFenster.title("EPG")
+    lFenster.geometry("+" + str(Master.winfo_x()+330) + "+" + str(Master.winfo_y()+150)) 
+    lFenster.wm_attributes("-topmost", True)
+    lFenster.resizable(False, False)
+    Lander_Liste = tk.Listbox(lFenster, width=25, height=25, selectborderwidth=2)
+    Lander_Liste.config(foreground=FensterVG, background=FensterHG, font="Helvetica 11")
+    Lander_Liste.pack(fill="both", padx=3, pady=3, expand=True)
+    Lander_Liste.delete(0, tk.END) 
+
+    epgLand.clear()
+    with open(epgDatei, "r", encoding="utf-8") as Datei:    # Länder-Liste erstellen
+        for Zeile in Datei:
+            epgLand.append(Zeile.split(", ")[1])
+    
+    auswahl = []
+    auswahl.append(epgLand[0])                              # Länderauswahl-Liste erstellen
+    for i in range(len(epgLand)):
+        gefunden = False
+        for j in range(0, len(auswahl), 1):
+            if epgLand[i] == auswahl[j]:
+                gefunden = True
+                break
+        if not gefunden:
+            auswahl.append(epgLand[i])
+
+    for i in range(len(auswahl)):                           # Länderauswahl-Liste anzeigen
+        Lander_Liste.insert(tk.END, "   " + auswahl[i])
+    Lander_Liste.selection_set(0)
+    Lander_Liste.activate(0)
+    Lander_Liste.see(0)
+    Lander_Liste.focus_set()
+
+    Lander_Liste.bind("<Return>", Land_Anzeigen)
+    Lander_Liste.bind("<Double-Button-1>", Land_Anzeigen)
+    lFenster.bind("<Escape>", lambda event: lFenster.destroy())
+
+###################################################################################################################
+###################################################################################################################
 
 def Player_Auswaehlen(event=None):
 
@@ -1245,6 +1519,7 @@ def Download_Manager(event=None):
     ButtonAbbrechen.bind("<Return>", lambda event: Fenster.destroy())
     Fenster.bind("<Escape>", lambda event: Fenster.destroy())
 
+###############################################################################################################
 ###############################################################################################################
 
 def URLs_Pruefen(event=None):
@@ -1570,6 +1845,7 @@ def Alle_Beenden():
         recEnde.clear()
         recName.clear()
 
+###############################################################################################################
 ###############################################################################################################
 
 def Schedule_Starten():
@@ -1922,6 +2198,7 @@ def Schedule_Bearbeiten(event=None):
         Fenster.bind("<Escape>", lambda event: Fenster.destroy())
 
 ###############################################################################################################
+###############################################################################################################
 
 def Einstellungen(event=None):
 
@@ -2020,11 +2297,14 @@ def Einstellungen(event=None):
         Menuleiste.entryconfigure(6, label=TxT["Hilfe"], font=FontM+SizeM)
         Menu_Datei.entryconfigure(0, label=TxT["Öffnen"], font=FontM+SizeM)
         Menu_Datei.entryconfigure(1, label=TxT["Bearbeiten"], font=FontM+SizeM)
-        Menu_Datei.entryconfigure(3, label=TxT["History"], font=FontM+SizeM)
-        Menu_Datei.entryconfigure(4, label=TxT["Player"], font=FontM+SizeM)
-        Menu_Datei.entryconfigure(5, label=TxT["UserAgent"], font=FontM+SizeM)
-        Menu_Datei.entryconfigure(6, label=TxT["Einstellungen"], font=FontM+SizeM)
-        Menu_Datei.entryconfigure(8, label=TxT["Beenden"], font=FontM+SizeM)
+        Menu_Datei.entryconfigure(3, label=TxT["EPG"], font=FontM+SizeM)
+        Menu_Datei_EPG.entryconfigure(0, label=TxT["Deutschland"], font=FontM+SizeM)
+        Menu_Datei_EPG.entryconfigure(1, label=TxT["Weltweit"], font=FontM+SizeM)
+        Menu_Datei.entryconfigure(4, label=TxT["History"], font=FontM+SizeM)
+        Menu_Datei.entryconfigure(6, label=TxT["Player"], font=FontM+SizeM)
+        Menu_Datei.entryconfigure(7, label=TxT["UserAgent"], font=FontM+SizeM)
+        Menu_Datei.entryconfigure(8, label=TxT["Einstellungen"], font=FontM+SizeM)
+        Menu_Datei.entryconfigure(10, label=TxT["Beenden"], font=FontM+SizeM)
         Menu_Suchen.entryconfigure(0, label=TxT["Name"], font=FontM+SizeM)
         Menu_Suchen.entryconfigure(1, label=TxT["Land"], font=FontM+SizeM)
         Menu_Suchen.entryconfigure(2, label=TxT["Sprache"], font=FontM+SizeM)
@@ -2133,7 +2413,7 @@ def Hilfe_Tastatur(event=None):
     Fenster.wm_attributes("-topmost", True)
     #Fenster.grab_set()
     Fenster.resizable(False, False)
-    Text_Fenster = tk.Text(Fenster, width=42, height=43, pady=10, padx=10)
+    Text_Fenster = tk.Text(Fenster, width=42, height=44, pady=10, padx=10)
     Text_Fenster.config(foreground=FensterVG, background=FensterHG, font="Consolas 10", wrap="none")
     Text_Fenster.pack(fill="both", padx=3, pady=3, expand=True)
     Text_Fenster.configure(state="normal")
@@ -2147,8 +2427,8 @@ def Hilfe_Tastatur(event=None):
         Text_Fenster.insert(tk.END, "\n   Vorherige Playliste:   <F2>")
         Text_Fenster.insert(tk.END, "\n   Alle anzeigen:         <F3>")
         Text_Fenster.insert(tk.END, "\n   Zu Favoriten hinzu:    <F4>")
-        Text_Fenster.insert(tk.END, "\n   Sender History:        <F5>")
-        Text_Fenster.insert(tk.END, "\n   User-Agent auswählen:  <F6>")
+        Text_Fenster.insert(tk.END, "\n   TV Programm:           <F5>")
+        Text_Fenster.insert(tk.END, "\n   Sender History:        <F6>")
         Text_Fenster.insert(tk.END, "\n   Download-Manager:      <F7>")
         Text_Fenster.insert(tk.END, "\n   Neue Timer-Aufnahme:   <F8>")
         Text_Fenster.insert(tk.END, "\n   Einstellungen:         <F9>")
@@ -2156,6 +2436,7 @@ def Hilfe_Tastatur(event=None):
         Text_Fenster.insert(tk.END, "\n   Aufnahme stoppen:      <Strg+T>")
         Text_Fenster.insert(tk.END, "\n   URL's überprüfen:      <Strg+U>")
         Text_Fenster.insert(tk.END, "\n   Player auswählen:      <Strg+P>")
+        Text_Fenster.insert(tk.END, "\n   User Agent ändern:     <Strg+G>")
         Text_Fenster.insert(tk.END, "\n   Favoriten anzeigen:    <Strg+F>")
         Text_Fenster.insert(tk.END, "\n   Favoriten bearbeiten:  <Strg+A>")
         Text_Fenster.insert(tk.END, "\n   Neuen Stream eingeben: <Strg+N>")
@@ -2185,8 +2466,8 @@ def Hilfe_Tastatur(event=None):
         Text_Fenster.insert(tk.END, "\n   Previous playlist:     <F2>")
         Text_Fenster.insert(tk.END, "\n   Search filter off:     <F3>")
         Text_Fenster.insert(tk.END, "\n   Add to favorites:      <F4>")
-        Text_Fenster.insert(tk.END, "\n   Channel history:       <F5>")
-        Text_Fenster.insert(tk.END, "\n   Select user agent:     <F6>")
+        Text_Fenster.insert(tk.END, "\n   TV Guide:              <F5>")
+        Text_Fenster.insert(tk.END, "\n   Channel history:       <F6>")
         Text_Fenster.insert(tk.END, "\n   Download manager:      <F7>")
         Text_Fenster.insert(tk.END, "\n   Set new timer:         <F8>")
         Text_Fenster.insert(tk.END, "\n   Settings:              <F9>")
@@ -2194,6 +2475,7 @@ def Hilfe_Tastatur(event=None):
         Text_Fenster.insert(tk.END, "\n   Terminate recording:   <Ctrl+T>")
         Text_Fenster.insert(tk.END, "\n   Check URLs:            <Ctrl+U>")
         Text_Fenster.insert(tk.END, "\n   Select player:         <Ctrl+P>")
+        Text_Fenster.insert(tk.END, "\n   Select user agent:     <Strg+G>")
         Text_Fenster.insert(tk.END, "\n   View favorites:        <Ctrl+F>")
         Text_Fenster.insert(tk.END, "\n   Edit favorite:         <Ctrl+A>")
         Text_Fenster.insert(tk.END, "\n   Enter new stream:      <Ctrl+N>")
@@ -2243,7 +2525,7 @@ def Hilfe_Ueber():
     else:
         tk.Label(Fenster).pack()
     Zeile1 = tk.Label(Fenster, text="Stream Recorder", font="Helvetica 18 bold")
-    Zeile2 = tk.Label(Fenster, text="Version 1.54", font="Helvetica 12")
+    Zeile2 = tk.Label(Fenster, text="Version 1.55", font="Helvetica 12")
     Laufzeile.Zeichenkette = TxT["Entwickelt"]
     Lauftext.set(Laufzeile.Zeichenkette[0:43])
     Zeile3 = tk.Label(Fenster, textvariable=Lauftext, font="Helvetica 12")
@@ -2295,6 +2577,7 @@ def Statusleiste_Anzeigen(text):
 
 Menuleiste = tk.Menu(Master, activebackground=Hintergrund, activeforeground=Vordergrund, font=FontM+SizeM)
 Menu_Datei = tk.Menu(Menuleiste, tearoff=0, activebackground=Hintergrund, activeforeground=Vordergrund, font=FontM+SizeM)
+Menu_Datei_EPG = tk.Menu(Menuleiste, tearoff=0, activebackground=Hintergrund, activeforeground=Vordergrund, font=FontM+SizeM)
 Menu_Suchen = tk.Menu(Menuleiste, tearoff=0, activebackground=Hintergrund, activeforeground=Vordergrund, font=FontM+SizeM)
 Menu_Favoriten = tk.Menu(Menuleiste, tearoff=0, activebackground=Hintergrund, activeforeground=Vordergrund, font=FontM+SizeM)
 Menu_Aufnahme = tk.Menu(Menuleiste, tearoff=0, activebackground=Hintergrund, activeforeground=Vordergrund, font=FontM+SizeM)
@@ -2304,7 +2587,11 @@ Menu_Hilfe = tk.Menu(Menuleiste, tearoff=0, activebackground=Hintergrund, active
 Menu_Datei.add_command(label=TxT["Öffnen"], command=Datei_Oeffnen, accelerator=" <Ctrl+O> ")
 Menu_Datei.add_command(label=TxT["Bearbeiten"], command=Datei_Bearbeiten)
 Menu_Datei.add_separator()
-Menu_Datei.add_command(label=TxT["History"], command=History_Anzeigen, accelerator=" <F5> ")
+Menu_Datei_EPG.add_command(label=TxT["Deutschland"], command=EPG_Deutschland)
+Menu_Datei_EPG.add_command(label=TxT["Weltweit"], command=EPG_Weltweit)
+Menu_Datei.add_cascade(label=TxT["EPG"], menu=Menu_Datei_EPG)
+Menu_Datei.add_command(label=TxT["History"], command=History_Anzeigen, accelerator=" <F6> ")
+Menu_Datei.add_separator()
 Menu_Datei.add_command(label=TxT["Player"], command=Player_Auswaehlen)
 Menu_Datei.add_command(label=TxT["UserAgent"], command=User_Agent_Aendern)
 Menu_Datei.add_command(label=TxT["Einstellungen"], command=Einstellungen, accelerator=" <F9> ")
@@ -2379,8 +2666,8 @@ Listen_Box.bind("<F1>", Hilfe_Tastatur)
 Listen_Box.bind("<F2>", Favoriten_Zurueck)
 Listen_Box.bind("<F3>", Alle_Anzeigen)
 Listen_Box.bind("<F4>", Favoriten_Hinzufuegen)
-Listen_Box.bind("<F5>", History_Anzeigen)
-Listen_Box.bind("<F6>", User_Agent_Aendern)
+Listen_Box.bind("<F5>", EPG_Deutschland)
+Listen_Box.bind("<F6>", History_Anzeigen)
 Listen_Box.bind("<F7>", Download_Manager)
 Listen_Box.bind("<F8>", Schedule_Hinzufuegen)
 Listen_Box.bind("<F9>", Einstellungen)
@@ -2388,6 +2675,7 @@ Listen_Box.bind("<Control-Key-h>", History_Anzeigen)
 Listen_Box.bind("<Control-Key-t>", Aufnahme_Stoppen)
 Listen_Box.bind("<Control-Key-u>", URLs_Pruefen)
 Listen_Box.bind("<Control-Key-p>", Player_Auswaehlen)
+Listen_Box.bind("<Control-Key-g>", User_Agent_Aendern)
 Listen_Box.bind("<Control-Key-f>", Favoriten_Anzeigen)
 Listen_Box.bind("<Control-Key-a>", Favoriten_Bearbeiten)
 Listen_Box.bind("<Control-Key-n>", Favoriten_Eingeben)
@@ -2406,7 +2694,7 @@ Schedule_Starten()      # Schedule einmal pro Minute nach Terminen durchsuchen
 
 Datei_Oeffnen()         # StartDatei laden oder Playlist auswählen
 
-Master.protocol("WM_DELETE_WINDOW", Programm_Beenden)
+Master.protocol("WM_DELETE_WINDOW", Programm_Beenden)    # Mausklick auf X abfangen
 
 Master.mainloop()
 
