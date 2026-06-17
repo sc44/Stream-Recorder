@@ -69,4 +69,4 @@ https://aur.archlinux.org/packages/streamrecorder
 ### License:
 This project is licensed under the GNU GPL3 - see the LICENSE file for details
 
-![Badge](https://hitscounter.dev/api/hit?url=https://github.com/sc44/Stream-Recorder)
+![Badge](https://hitscounter.dev/api/hit?url=https://github.com/sc44/Stream-Recorder&color=%230a58ca&message=&style=plastic&tz=UTC)
